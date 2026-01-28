@@ -1,4 +1,4 @@
-# Grevling
+# Grevling Appen
 
 En Android-app som videresender SMS og tapte anrop til email via Gmail SMTP.
 
