@@ -38,10 +38,14 @@ og følger [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Target SDK: 34 (Android 14)
 - Språk: Kotlin
 - Dependencies: JavaMail, AndroidX, Kotlin Coroutines
-- F-Droid ready (ingen proprietary dependencies)
+- Ingen proprietary dependencies
 - Thread-safe operasjoner
 - Memory leak-free architecture
 - Modern Android APIs (Activity Result API, etc)
+
+### Lisens
+- Personal Use Only License (non-commercial)
+- Distribueres kun via GitHub Releases
 
 ---
 

@@ -64,14 +64,13 @@ For at appen skal kunne sende email via Gmail trenger du et **App Password**. De
 - Sjekk internettforbindelsen
 - Verifiser at appen har INTERNET-tillatelse (den skal ha det automatisk)
 
-## F-Droid Kompatibilitet
+## Distribusjon
 
-Denne appen er **F-Droid-ready** og bruker kun:
-- **JavaMail** (com.sun.mail:android-mail) - Open source SMTP-bibliotek
-- **AndroidX** biblioteker
-- **Kotlin Coroutines**
-- Ingen proprietære Google Play Services
-- Ingen tracking eller analytics
+Appen distribueres kun via GitHub:
+- **Last ned:** [GitHub Releases](https://github.com/Aliman00/grevling/releases)
+- **Ingen tracking eller analytics**
+- **Ingen proprietære avhengigheter**
+- **Open source** (Personal Use Only license)
 
 ## Tillatelser
 
@@ -102,8 +101,18 @@ APK-filen vil være i: `app/build/outputs/apk/release/`
 
 ## Lisens
 
-Dette prosjektet er open source.
+Dette prosjektet er lisensiert under **Personal Use Only License** - se [LICENSE](LICENSE) filen for detaljer.
+
+**Viktig:**
+- ✅ Gratis for personlig bruk
+- ✅ Kan modifiseres for eget bruk
+- ✅ Kan deles med andre (gratis)
+- ❌ Kommersiell bruk IKKE tillatt
+- ❌ Kan IKKE selges
+- ❌ Kan IKKE ha subscription-modeller
+
+For kommersiell bruk, kontakt utvikleren via GitHub Issues.
 
 ## Support
 
-For spørsmål eller problemer, opprett en issue i dette repositoriet.
+For spørsmål eller problemer, opprett en [issue](https://github.com/Aliman00/grevling/issues) i dette repositoriet.
