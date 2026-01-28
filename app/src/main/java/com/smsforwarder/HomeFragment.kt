@@ -337,7 +337,7 @@ class HomeFragment : Fragment() {
         val hasGmailAddress = prefs.getString("gmail_address", "")?.isNotEmpty() == true
         val hasGmailPassword = prefs.getString("gmail_password", "")?.isNotEmpty() == true
         val hasRecipientEmail = prefs.getString("email", "")?.isNotEmpty() == true
-        val hasNotificationAccess = isNotificationServiceEnabled()
+        val hasNotificationAccess = NotificationHelper.isNotificationServiceEnabled(requireContext())
 
         when {
             !hasNotificationAccess -> {
@@ -359,11 +359,4 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun isNotificationServiceEnabled(): Boolean {
-        val enabledServices = Settings.Secure.getString(
-            requireContext().contentResolver,
-            "enabled_notification_listeners"
-        )
-        return enabledServices?.contains(requireContext().packageName) == true
-    }
 }

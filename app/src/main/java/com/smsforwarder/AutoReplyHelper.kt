@@ -54,7 +54,7 @@ object AutoReplyHelper {
         }
 
         if (message.length > MAX_SMS_LENGTH) {
-            Logger.w(TAG, "Auto-svar melding er ${message.length} tegn (maks $MAX_SMS_LENGTH)")
+            Logger.w(TAG, "Auto-svar melding er ${message.length} tegn, sendes som multi-part SMS")
         }
 
         sendSms(context, phoneNumber, message)
@@ -80,8 +80,15 @@ object AutoReplyHelper {
                 SmsManager.getDefault()
             }
 
-            smsManager.sendTextMessage(phoneNumber, null, message, null, null)
-            Logger.d(TAG, "Auto-svar SMS sendt")
+            // Håndter lange meldinger automatisk (multi-part SMS)
+            if (message.length > MAX_SMS_LENGTH) {
+                val parts = smsManager.divideMessage(message)
+                smsManager.sendMultipartTextMessage(phoneNumber, null, parts, null, null)
+                Logger.d(TAG, "Auto-svar SMS sendt (${parts.size} deler)")
+            } else {
+                smsManager.sendTextMessage(phoneNumber, null, message, null, null)
+                Logger.d(TAG, "Auto-svar SMS sendt")
+            }
         } catch (e: SecurityException) {
             Logger.e(TAG, "Tilgang nektet for sending av SMS", e)
         } catch (e: IllegalArgumentException) {

@@ -253,14 +253,17 @@ class SettingsFragment : Fragment() {
             return
         }
 
-        // Valider at det er en Gmail-adresse (påkrevd for Gmail SMTP)
-        if (!gmailAddress.lowercase().endsWith("@gmail.com")) {
+        // Sjekk om det er Gmail eller Google Workspace
+        val isGmail = gmailAddress.lowercase().endsWith("@gmail.com")
+        val isGoogleWorkspace = gmailAddress.contains("@") && !isGmail
+
+        if (isGoogleWorkspace) {
+            // Advarsel men tillat fortsettelse for Google Workspace
             Toast.makeText(
                 requireContext(),
-                "❌ Dette må være en Gmail-adresse (@gmail.com)",
+                "⚠️ Google Workspace: Sjekk at SMTP er aktivert for kontoen",
                 Toast.LENGTH_LONG
             ).show()
-            return
         }
 
         testEmailButton.isEnabled = false
@@ -289,7 +292,7 @@ class SettingsFragment : Fragment() {
     }
 
     private fun updatePermissionsStatus() {
-        val hasNotificationAccess = isNotificationServiceEnabled()
+        val hasNotificationAccess = NotificationHelper.isNotificationServiceEnabled(requireContext())
 
         // Tell tillatelsesgrupper (slik brukeren ser dem i Android)
         val hasSmsPermissions = ContextCompat.checkSelfPermission(
@@ -334,14 +337,6 @@ class SettingsFragment : Fragment() {
         // Skjul knapper hvis tillatelser er gitt
         notificationButton.visibility = if (hasNotificationAccess) View.GONE else View.VISIBLE
         requestPermButton.visibility = if (allPermsGranted) View.GONE else View.VISIBLE
-    }
-
-    private fun isNotificationServiceEnabled(): Boolean {
-        val enabledServices = Settings.Secure.getString(
-            requireContext().contentResolver,
-            "enabled_notification_listeners"
-        )
-        return enabledServices?.contains(requireContext().packageName) == true
     }
 
     private fun showAppPasswordGuide() {
