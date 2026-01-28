@@ -1,17 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#2196F3</color>
-    <color name="primary_dark">#1976D2</color>
-    <color name="accent">#FF5722</color>
-    <color name="background">#FFFFFF</color>
-    <color name="nav_item_selected">#2196F3</color>
-    <color name="nav_item_default">#757575</color>
+    <!-- Material 3 Color Scheme - Modern Blue/Teal -->
+    <!-- Primary -->
+    <color name="md_primary">#006A6A</color>
+    <color name="md_on_primary">#FFFFFF</color>
+    <color name="md_primary_container">#6FF7F6</color>
+    <color name="md_on_primary_container">#002020</color>
+    
+    <!-- Secondary -->
+    <color name="md_secondary">#4A6363</color>
+    <color name="md_on_secondary">#FFFFFF</color>
+    <color name="md_secondary_container">#CCE8E7</color>
+    <color name="md_on_secondary_container">#051F1F</color>
+    
+    <!-- Background and Surface -->
+    <color name="md_background">#F5FAFA</color>
+    <color name="md_surface">#FFFFFF</color>
+    <color name="md_surface_variant">#DAE5E4</color>
+    <color name="md_on_surface">#191C1C</color>
+    <color name="md_on_surface_variant">#3F4948</color>
+    
+    <!-- Outline -->
+    <color name="md_outline">#6F7978</color>
+    <color name="md_outline_variant">#BEC9C8</color>
+    
+    <!-- Status Colors -->
+    <color name="status_success">#1B873B</color>
+    <color name="status_success_container">#A8F5AD</color>
+    <color name="status_warning">#7D5800</color>
+    <color name="status_warning_container">#FFDEA8</color>
+    <color name="status_error">#BA1A1A</color>
+    <color name="status_error_container">#FFDAD6</color>
+    
+    <!-- Legacy colors for compatibility -->
+    <color name="primary">#006A6A</color>
+    <color name="primary_dark">#004F4F</color>
+    <color name="accent">#006A6A</color>
+    <color name="background">#F5FAFA</color>
+    <color name="nav_item_selected">#006A6A</color>
+    <color name="nav_item_default">#6F7978</color>
 
-    <!-- UI Colors -->
-    <color name="text_secondary">#FF666666</color>
-    <color name="text_success">#FF4CAF50</color>
-    <color name="text_warning">#FFFF9800</color>
-    <color name="text_disabled">#FF9E9E9E</color>
-    <color name="background_locked">#FFF5F5F5</color>
-    <color name="separator">#FFDDDDDD</color>
+    <!-- UI Colors (legacy) -->
+    <color name="text_secondary">#3F4948</color>
+    <color name="text_success">#1B873B</color>
+    <color name="text_warning">#7D5800</color>
+    <color name="text_disabled">#6F7978</color>
+    <color name="background_locked">#DAE5E4</color>
+    <color name="separator">#BEC9C8</color>
 </resources>

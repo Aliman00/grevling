@@ -1,28 +1,34 @@
 package com.smsforwarder
 
 import android.content.SharedPreferences
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.LinearLayout
+import android.widget.TextView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.textfield.TextInputEditText
 
 class HomeFragment : BaseFragment() {
 
-    private lateinit var toggleSwitch: Switch
-    private lateinit var autoReplySwitch: Switch
-    private lateinit var sameMessageSwitch: Switch
+    private lateinit var statusCard: MaterialCardView
+    private lateinit var statusText: TextView
+    private lateinit var toggleSwitch: MaterialSwitch
+    private lateinit var autoReplySwitch: MaterialSwitch
+    private lateinit var autoReplyOptionsContainer: LinearLayout
+    private lateinit var autoReplyLockButton: MaterialButton
+    private lateinit var sameMessageSwitch: MaterialSwitch
     private lateinit var sameMessageContainer: LinearLayout
-    private lateinit var unifiedMessageEdit: EditText
+    private lateinit var unifiedMessageEdit: TextInputEditText
     private lateinit var unifiedSavedText: TextView
     private lateinit var separateMessagesContainer: LinearLayout
-    private lateinit var smsReplyEdit: EditText
+    private lateinit var smsReplyEdit: TextInputEditText
     private lateinit var smsSavedText: TextView
-    private lateinit var callReplyEdit: EditText
+    private lateinit var callReplyEdit: TextInputEditText
     private lateinit var callSavedText: TextView
-    private lateinit var statusText: TextView
-    private lateinit var autoReplyLockButton: Button
     private lateinit var prefs: SharedPreferences
     private var isAutoReplyLocked = true
 
@@ -31,177 +37,69 @@ class HomeFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val scrollView = ScrollView(requireContext())
-        val layout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(50, 50, 50, 50)
-        }
-
+        val view = inflater.inflate(R.layout.fragment_home, container, false)
+        
         prefs = getEncryptedPreferences()
         isAutoReplyLocked = prefs.getBoolean("auto_reply_locked", true)
 
-        // Status
-        statusText = TextView(requireContext()).apply {
-            text = "Status: Avventer innstillinger..."
-            textSize = 18f
-            setPadding(0, 0, 0, 60)
-        }
-        layout.addView(statusText)
+        // Bind views
+        statusCard = view.findViewById(R.id.statusCard)
+        statusText = view.findViewById(R.id.statusText)
+        toggleSwitch = view.findViewById(R.id.toggleSwitch)
+        autoReplySwitch = view.findViewById(R.id.autoReplySwitch)
+        autoReplyOptionsContainer = view.findViewById(R.id.autoReplyOptionsContainer)
+        autoReplyLockButton = view.findViewById(R.id.autoReplyLockButton)
+        sameMessageSwitch = view.findViewById(R.id.sameMessageSwitch)
+        sameMessageContainer = view.findViewById(R.id.sameMessageContainer)
+        unifiedMessageEdit = view.findViewById(R.id.unifiedMessageEdit)
+        unifiedSavedText = view.findViewById(R.id.unifiedSavedText)
+        separateMessagesContainer = view.findViewById(R.id.separateMessagesContainer)
+        smsReplyEdit = view.findViewById(R.id.smsReplyEdit)
+        smsSavedText = view.findViewById(R.id.smsSavedText)
+        callReplyEdit = view.findViewById(R.id.callReplyEdit)
+        callSavedText = view.findViewById(R.id.callSavedText)
 
-        // Varsler toggle
-        toggleSwitch = Switch(requireContext()).apply {
-            text = "SMS & Anrops-varsler"
-            textSize = 16f
-            minHeight = 100
-            setPadding(0, 20, 0, 20)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit().putBoolean("enabled", isChecked).apply()
-                updateStatus()
-            }
-        }
-        layout.addView(toggleSwitch)
-
-        // Separator med ekstra spacing
-        layout.addView(View(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2)
-            setBackgroundColor(getColor(R.color.separator))
-            setPadding(0, 70, 0, 70)
-        })
-
-        // Auto-reply toggle
-        autoReplySwitch = Switch(requireContext()).apply {
-            text = "Auto-svar"
-            textSize = 16f
-            minHeight = 100
-            setPadding(0, 20, 0, 20)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit().putBoolean("auto_reply_enabled", isChecked).apply()
-                updateAutoReplyVisibility()
-            }
-        }
-        layout.addView(autoReplySwitch)
-
-        autoReplyLockButton = Button(requireContext()).apply {
-            text = "🔒 Lås opp auto-svar"
-            textSize = 12f
-            minHeight = 100
-            setPadding(0, 25, 0, 25)
-            setOnClickListener { toggleAutoReplyLock() }
-        }
-        layout.addView(autoReplyLockButton)
-
-        // Same message toggle
-        sameMessageSwitch = Switch(requireContext()).apply {
-            text = "Bruk samme melding for SMS og anrop"
-            textSize = 14f
-            minHeight = 90
-            setPadding(50, 30, 0, 30)
-            setOnCheckedChangeListener { _, isChecked ->
-                prefs.edit().putBoolean("use_same_message", isChecked).apply()
-                updateAutoReplyVisibility()
-            }
-        }
-        layout.addView(sameMessageSwitch)
-
-        // Unified message container
-        sameMessageContainer = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(50, 20, 0, 40)
-        }
-        sameMessageContainer.addView(TextView(requireContext()).apply {
-            text = "Melding:"
-            textSize = 12f
-            setPadding(0, 0, 0, 10)
-            setTextColor(getColor(R.color.text_secondary))
-        })
-
-        unifiedSavedText = TextView(requireContext()).apply {
-            text = "✓ Lagret"
-            textSize = 11f
-            setTextColor(getColor(R.color.text_success))
-            visibility = View.GONE
+        // Setup listeners
+        toggleSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("enabled", isChecked).apply()
+            updateStatus()
         }
 
-        unifiedMessageEdit = EditText(requireContext()).apply {
-            minLines = 3
-            maxLines = 5
-            setPadding(20, 20, 20, 20)
-            addTextChangedListener(createAutoSaveWatcher(
-                savedIndicator = unifiedSavedText,
-                shouldSave = { !isAutoReplyLocked },
-                onSave = { msg -> prefs.edit().putString("unified_reply_message", msg).apply() },
-                onAfterSave = { updateStatus() }
-            ))
-        }
-        sameMessageContainer.addView(unifiedMessageEdit)
-        sameMessageContainer.addView(unifiedSavedText)
-        layout.addView(sameMessageContainer)
-
-        // Separate messages container
-        separateMessagesContainer = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(50, 20, 0, 40)
+        autoReplySwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("auto_reply_enabled", isChecked).apply()
+            updateAutoReplyVisibility()
         }
 
-        separateMessagesContainer.addView(TextView(requireContext()).apply {
-            text = "Auto-svar for SMS:"
-            textSize = 12f
-            setPadding(0, 0, 0, 10)
-            setTextColor(getColor(R.color.text_secondary))
-        })
+        autoReplyLockButton.setOnClickListener { toggleAutoReplyLock() }
 
-        smsSavedText = TextView(requireContext()).apply {
-            text = "✓ Lagret"
-            textSize = 11f
-            setTextColor(getColor(R.color.text_success))
-            visibility = View.GONE
+        sameMessageSwitch.setOnCheckedChangeListener { _, isChecked ->
+            prefs.edit().putBoolean("use_same_message", isChecked).apply()
+            updateAutoReplyVisibility()
         }
 
-        smsReplyEdit = EditText(requireContext()).apply {
-            minLines = 3
-            maxLines = 5
-            setPadding(20, 20, 20, 20)
-            addTextChangedListener(createAutoSaveWatcher(
-                savedIndicator = smsSavedText,
-                shouldSave = { !isAutoReplyLocked },
-                onSave = { msg -> prefs.edit().putString("sms_reply_message", msg).apply() },
-                onAfterSave = { updateStatus() }
-            ))
-        }
-        separateMessagesContainer.addView(smsReplyEdit)
-        separateMessagesContainer.addView(smsSavedText)
+        // Setup text watchers for auto-save
+        unifiedMessageEdit.addTextChangedListener(createAutoSaveWatcher(
+            savedIndicator = unifiedSavedText,
+            shouldSave = { !isAutoReplyLocked },
+            onSave = { msg -> prefs.edit().putString("unified_reply_message", msg).apply() },
+            onAfterSave = { updateStatus() }
+        ))
 
-        separateMessagesContainer.addView(TextView(requireContext()).apply {
-            text = "Auto-svar for tapt anrop:"
-            textSize = 12f
-            setPadding(0, 40, 0, 10)
-            setTextColor(getColor(R.color.text_secondary))
-        })
+        smsReplyEdit.addTextChangedListener(createAutoSaveWatcher(
+            savedIndicator = smsSavedText,
+            shouldSave = { !isAutoReplyLocked },
+            onSave = { msg -> prefs.edit().putString("sms_reply_message", msg).apply() },
+            onAfterSave = { updateStatus() }
+        ))
 
-        callSavedText = TextView(requireContext()).apply {
-            text = "✓ Lagret"
-            textSize = 11f
-            setTextColor(getColor(R.color.text_success))
-            visibility = View.GONE
-        }
+        callReplyEdit.addTextChangedListener(createAutoSaveWatcher(
+            savedIndicator = callSavedText,
+            shouldSave = { !isAutoReplyLocked },
+            onSave = { msg -> prefs.edit().putString("call_reply_message", msg).apply() },
+            onAfterSave = { updateStatus() }
+        ))
 
-        callReplyEdit = EditText(requireContext()).apply {
-            minLines = 3
-            maxLines = 5
-            setPadding(20, 20, 20, 20)
-            addTextChangedListener(createAutoSaveWatcher(
-                savedIndicator = callSavedText,
-                shouldSave = { !isAutoReplyLocked },
-                onSave = { msg -> prefs.edit().putString("call_reply_message", msg).apply() },
-                onAfterSave = { updateStatus() }
-            ))
-        }
-        separateMessagesContainer.addView(callReplyEdit)
-        separateMessagesContainer.addView(callSavedText)
-        layout.addView(separateMessagesContainer)
-
-        scrollView.addView(layout)
-        return scrollView
+        return view
     }
 
     override fun onResume() {
@@ -216,8 +114,7 @@ class HomeFragment : BaseFragment() {
         val autoReplyEnabled = prefs.getBoolean("auto_reply_enabled", false)
         val useSameMessage = prefs.getBoolean("use_same_message", true)
 
-        sameMessageSwitch.visibility = if (autoReplyEnabled) View.VISIBLE else View.GONE
-        autoReplyLockButton.visibility = if (autoReplyEnabled) View.VISIBLE else View.GONE
+        autoReplyOptionsContainer.visibility = if (autoReplyEnabled) View.VISIBLE else View.GONE
 
         if (autoReplyEnabled) {
             if (useSameMessage) {
@@ -227,9 +124,6 @@ class HomeFragment : BaseFragment() {
                 sameMessageContainer.visibility = View.GONE
                 separateMessagesContainer.visibility = View.VISIBLE
             }
-        } else {
-            sameMessageContainer.visibility = View.GONE
-            separateMessagesContainer.visibility = View.GONE
         }
     }
 
@@ -245,17 +139,11 @@ class HomeFragment : BaseFragment() {
             unifiedMessageEdit.isEnabled = false
             smsReplyEdit.isEnabled = false
             callReplyEdit.isEnabled = false
-            unifiedMessageEdit.setBackgroundColor(getColor(R.color.background_locked))
-            smsReplyEdit.setBackgroundColor(getColor(R.color.background_locked))
-            callReplyEdit.setBackgroundColor(getColor(R.color.background_locked))
         } else {
             autoReplyLockButton.text = getString(R.string.unlock_auto_reply)
             unifiedMessageEdit.isEnabled = true
             smsReplyEdit.isEnabled = true
             callReplyEdit.isEnabled = true
-            unifiedMessageEdit.setBackgroundColor(Color.WHITE)
-            smsReplyEdit.setBackgroundColor(Color.WHITE)
-            callReplyEdit.setBackgroundColor(Color.WHITE)
         }
     }
 
@@ -294,7 +182,6 @@ class HomeFragment : BaseFragment() {
 
     private fun updateStatus() {
         val enabled = prefs.getBoolean("enabled", false)
-        // getString() med default value returnerer aldri null
         val hasGmailAddress = prefs.getString("gmail_address", "")?.isNotEmpty() == true
         val hasGmailPassword = prefs.getString("gmail_password", "")?.isNotEmpty() == true
         val hasRecipientEmail = prefs.getString("email", "")?.isNotEmpty() == true
@@ -303,21 +190,20 @@ class HomeFragment : BaseFragment() {
         when {
             !hasNotificationAccess -> {
                 statusText.text = getString(R.string.status_needs_notification)
-                statusText.setTextColor(getColor(R.color.text_warning))
+                statusCard.setCardBackgroundColor(getColor(R.color.status_warning_container))
             }
             !hasGmailAddress || !hasGmailPassword || !hasRecipientEmail -> {
                 statusText.text = getString(R.string.status_missing_config)
-                statusText.setTextColor(getColor(R.color.text_warning))
+                statusCard.setCardBackgroundColor(getColor(R.color.status_warning_container))
             }
             enabled -> {
                 statusText.text = getString(R.string.status_active)
-                statusText.setTextColor(getColor(R.color.text_success))
+                statusCard.setCardBackgroundColor(getColor(R.color.status_success_container))
             }
             else -> {
                 statusText.text = getString(R.string.status_paused)
-                statusText.setTextColor(getColor(R.color.text_disabled))
+                statusCard.setCardBackgroundColor(getColor(R.color.md_surface_variant))
             }
         }
     }
-
 }

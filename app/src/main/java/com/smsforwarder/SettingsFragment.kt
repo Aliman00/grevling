@@ -9,25 +9,27 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.InputType
-import android.text.method.PasswordTransformationMethod
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 
 class SettingsFragment : BaseFragment() {
 
-    private lateinit var emailEditText: EditText
-    private lateinit var gmailAddressEditText: EditText
-    private lateinit var gmailPasswordEditText: EditText
-    private lateinit var testEmailButton: Button
-    private lateinit var notificationButton: Button
-    private lateinit var requestPermButton: Button
-    private var restrictedSettingsButton: Button? = null
+    private lateinit var emailEditText: TextInputEditText
+    private lateinit var gmailAddressEditText: TextInputEditText
+    private lateinit var gmailPasswordEditText: TextInputEditText
+    private lateinit var appPasswordHelpButton: MaterialButton
+    private lateinit var testEmailButton: MaterialButton
+    private lateinit var notificationButton: MaterialButton
+    private lateinit var requestPermButton: MaterialButton
+    private lateinit var restrictedSettingsButton: MaterialButton
     private lateinit var permissionsStatusText: TextView
     private lateinit var prefs: SharedPreferences
 
@@ -58,136 +60,48 @@ class SettingsFragment : BaseFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val scrollView = ScrollView(requireContext())
-        val layout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(50, 50, 50, 50)
-        }
-
+        val view = inflater.inflate(R.layout.fragment_settings, container, false)
+        
         prefs = getEncryptedPreferences()
 
-        // Header for innstillinger
-        layout.addView(TextView(requireContext()).apply {
-            text = "Konto-innstillinger"
-            textSize = 18f
-            setPadding(0, 0, 0, 20)
-        })
+        // Bind views
+        emailEditText = view.findViewById(R.id.recipientEmailEdit)
+        gmailAddressEditText = view.findViewById(R.id.gmailAddressEdit)
+        gmailPasswordEditText = view.findViewById(R.id.gmailPasswordEdit)
+        appPasswordHelpButton = view.findViewById(R.id.appPasswordHelpButton)
+        testEmailButton = view.findViewById(R.id.testEmailButton)
+        notificationButton = view.findViewById(R.id.notificationButton)
+        requestPermButton = view.findViewById(R.id.requestPermButton)
+        restrictedSettingsButton = view.findViewById(R.id.restrictedSettingsButton)
+        permissionsStatusText = view.findViewById(R.id.permissionsStatusText)
 
-        // Mottaker Email
-        layout.addView(TextView(requireContext()).apply {
-            text = "Mottaker email (hvor varsler sendes):"
-            textSize = 14f
-        })
-        emailEditText = EditText(requireContext()).apply {
-            hint = "din@email.no"
-            inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-            addTextChangedListener(createAutoSaveWatcher(
-                onSave = { email -> prefs.edit().putString("email", email).apply() }
-            ))
-        }
-        layout.addView(emailEditText)
+        // Setup listeners
+        emailEditText.addTextChangedListener(createAutoSaveWatcher(
+            onSave = { email -> prefs.edit().putString("email", email).apply() }
+        ))
 
-        // Gmail adresse
-        layout.addView(TextView(requireContext()).apply {
-            text = "Gmail-adresse (sender):"
-            textSize = 14f
-            setPadding(0, 30, 0, 0)
-        })
-        gmailAddressEditText = EditText(requireContext()).apply {
-            hint = "dinbrukernavn@gmail.com"
-            inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-            addTextChangedListener(createAutoSaveWatcher(
-                onSave = { address -> prefs.edit().putString("gmail_address", address).apply() }
-            ))
-        }
-        layout.addView(gmailAddressEditText)
+        gmailAddressEditText.addTextChangedListener(createAutoSaveWatcher(
+            onSave = { address -> prefs.edit().putString("gmail_address", address).apply() }
+        ))
 
-        // Gmail App Password
-        layout.addView(TextView(requireContext()).apply {
-            text = "Gmail App Password:"
-            textSize = 14f
-            setPadding(0, 20, 0, 0)
-        })
-        layout.addView(Button(requireContext()).apply {
-            text = "❓ Hvordan få Gmail App Password?"
-            textSize = 12f
-            setPadding(0, 10, 0, 10)
-            setOnClickListener { showAppPasswordGuide() }
-        })
-        gmailPasswordEditText = EditText(requireContext()).apply {
-            hint = "16-tegn App Password (uten mellomrom)"
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            transformationMethod = PasswordTransformationMethod.getInstance()
-            addTextChangedListener(createAutoSaveWatcher(
-                onSave = { password -> prefs.edit().putString("gmail_password", password).apply() }
-            ))
-        }
-        layout.addView(gmailPasswordEditText)
+        gmailPasswordEditText.addTextChangedListener(createAutoSaveWatcher(
+            onSave = { password -> prefs.edit().putString("gmail_password", password).apply() }
+        ))
 
-        // Test Email knapp
-        testEmailButton = Button(requireContext()).apply {
-            text = "📧 Send test-email"
-            setPadding(0, 20, 0, 0)
-            setOnClickListener { sendTestEmail() }
-        }
-        layout.addView(testEmailButton)
+        appPasswordHelpButton.setOnClickListener { showAppPasswordGuide() }
+        testEmailButton.setOnClickListener { sendTestEmail() }
+        notificationButton.setOnClickListener { openNotificationSettings() }
+        requestPermButton.setOnClickListener { requestPermissions() }
+        restrictedSettingsButton.setOnClickListener { showRestrictedSettingsGuide() }
 
-        // Separator
-        layout.addView(View(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2)
-            setBackgroundColor(getColor(R.color.separator))
-            setPadding(0, 40, 0, 30)
-        })
-
-        // Tillatelser seksjon
-        layout.addView(TextView(requireContext()).apply {
-            text = "Tillatelser"
-            textSize = 18f
-            setPadding(0, 0, 0, 20)
-        })
-
-        permissionsStatusText = TextView(requireContext()).apply {
-            text = "Sjekker tillatelser..."
-            textSize = 14f
-            setPadding(0, 0, 0, 20)
-        }
-        layout.addView(permissionsStatusText)
-
-        // Notification button
-        notificationButton = Button(requireContext()).apply {
-            text = "Gi varseltilgang"
-            setPadding(0, 0, 0, 20)
-            setOnClickListener { openNotificationSettings() }
-        }
-        layout.addView(notificationButton)
-
-        // Request permissions button
-        requestPermButton = Button(requireContext()).apply {
-            text = "Be om SMS/Anrop-tillatelser"
-            setPadding(0, 0, 0, 0)
-            setOnClickListener { requestPermissions() }
-        }
-        layout.addView(requestPermButton)
-
-        // Hjelpeknapp for begrensede innstillinger (Android 13+)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            restrictedSettingsButton = Button(requireContext()).apply {
-                text = getString(R.string.restricted_settings_button)
-                textSize = 12f
-                setPadding(0, 30, 0, 0)
-                setOnClickListener { showRestrictedSettingsGuide() }
-            }
-            layout.addView(restrictedSettingsButton)
-        }
-
-        scrollView.addView(layout)
-        return scrollView
+        return view
     }
 
     override fun onResume() {
         super.onResume()
         loadSettings()
         updatePermissionsStatus()
+        updateHelpButtonsVisibility()
     }
 
     private fun openNotificationSettings() {
@@ -323,7 +237,17 @@ class SettingsFragment : BaseFragment() {
         
         // Skjul hjelpeknapp for begrensede innstillinger hvis alle tillatelser er gitt
         val allGranted = hasNotificationAccess && allPermsGranted
-        restrictedSettingsButton?.visibility = if (allGranted) View.GONE else View.VISIBLE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            restrictedSettingsButton.visibility = if (allGranted) View.GONE else View.VISIBLE
+        } else {
+            restrictedSettingsButton.visibility = View.GONE
+        }
+    }
+
+    private fun updateHelpButtonsVisibility() {
+        // Skjul "Hvordan få Gmail App Password?" hvis passord allerede er satt
+        val hasPassword = prefs.getString("gmail_password", "")?.length == 16
+        appPasswordHelpButton.visibility = if (hasPassword) View.GONE else View.VISIBLE
     }
 
     private fun showAppPasswordGuide() {
