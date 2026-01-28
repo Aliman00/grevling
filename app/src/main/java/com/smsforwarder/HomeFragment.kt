@@ -1,0 +1,369 @@
+package com.smsforwarder
+
+import android.content.SharedPreferences
+import android.graphics.Color
+import android.os.Bundle
+import android.provider.Settings
+import androidx.core.content.ContextCompat
+import android.text.Editable
+import android.text.TextWatcher
+import java.lang.ref.WeakReference
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+class HomeFragment : Fragment() {
+
+    private lateinit var toggleSwitch: Switch
+    private lateinit var autoReplySwitch: Switch
+    private lateinit var sameMessageSwitch: Switch
+    private lateinit var sameMessageContainer: LinearLayout
+    private lateinit var unifiedMessageEdit: EditText
+    private lateinit var unifiedSavedText: TextView
+    private lateinit var separateMessagesContainer: LinearLayout
+    private lateinit var smsReplyEdit: EditText
+    private lateinit var smsSavedText: TextView
+    private lateinit var callReplyEdit: EditText
+    private lateinit var callSavedText: TextView
+    private lateinit var statusText: TextView
+    private lateinit var autoReplyLockButton: Button
+    private lateinit var prefs: SharedPreferences
+    private var isAutoReplyLocked = true
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val scrollView = ScrollView(requireContext())
+        val layout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 50, 50, 50)
+        }
+
+        prefs = getEncryptedPreferences()
+        isAutoReplyLocked = prefs.getBoolean("auto_reply_locked", true)
+
+        // Status
+        statusText = TextView(requireContext()).apply {
+            text = "Status: Avventer innstillinger..."
+            textSize = 18f
+            setPadding(0, 0, 0, 60)
+        }
+        layout.addView(statusText)
+
+        // Varsler toggle
+        toggleSwitch = Switch(requireContext()).apply {
+            text = "SMS & Anrops-varsler"
+            textSize = 16f
+            minHeight = 100
+            setPadding(0, 20, 0, 20)
+            setOnCheckedChangeListener { _, isChecked ->
+                prefs.edit().putBoolean("enabled", isChecked).apply()
+                updateStatus()
+            }
+        }
+        layout.addView(toggleSwitch)
+
+        // Separator med ekstra spacing
+        layout.addView(View(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2)
+            setBackgroundColor(getColor(R.color.separator))
+            setPadding(0, 70, 0, 70)
+        })
+
+        // Auto-reply toggle
+        autoReplySwitch = Switch(requireContext()).apply {
+            text = "Auto-svar"
+            textSize = 16f
+            minHeight = 100
+            setPadding(0, 20, 0, 20)
+            setOnCheckedChangeListener { _, isChecked ->
+                prefs.edit().putBoolean("auto_reply_enabled", isChecked).apply()
+                updateAutoReplyVisibility()
+            }
+        }
+        layout.addView(autoReplySwitch)
+
+        autoReplyLockButton = Button(requireContext()).apply {
+            text = "🔒 Lås opp auto-svar"
+            textSize = 12f
+            minHeight = 100
+            setPadding(0, 25, 0, 25)
+            setOnClickListener { toggleAutoReplyLock() }
+        }
+        layout.addView(autoReplyLockButton)
+
+        // Same message toggle
+        sameMessageSwitch = Switch(requireContext()).apply {
+            text = "Bruk samme melding for SMS og anrop"
+            textSize = 14f
+            minHeight = 90
+            setPadding(50, 30, 0, 30)
+            setOnCheckedChangeListener { _, isChecked ->
+                prefs.edit().putBoolean("use_same_message", isChecked).apply()
+                updateAutoReplyVisibility()
+            }
+        }
+        layout.addView(sameMessageSwitch)
+
+        // Unified message container
+        sameMessageContainer = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 20, 0, 40)
+        }
+        sameMessageContainer.addView(TextView(requireContext()).apply {
+            text = "Melding:"
+            textSize = 12f
+            setPadding(0, 0, 0, 10)
+            setTextColor(getColor(R.color.text_secondary))
+        })
+
+        unifiedSavedText = TextView(requireContext()).apply {
+            text = "✓ Lagret"
+            textSize = 11f
+            setTextColor(getColor(R.color.text_success))
+            visibility = View.GONE
+        }
+
+        unifiedMessageEdit = EditText(requireContext()).apply {
+            minLines = 3
+            maxLines = 5
+            setPadding(20, 20, 20, 20)
+            addTextChangedListener(createAutoSaveWatcher(unifiedSavedText) { msg ->
+                prefs.edit().putString("unified_reply_message", msg).apply()
+            })
+        }
+        sameMessageContainer.addView(unifiedMessageEdit)
+        sameMessageContainer.addView(unifiedSavedText)
+        layout.addView(sameMessageContainer)
+
+        // Separate messages container
+        separateMessagesContainer = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 20, 0, 40)
+        }
+
+        separateMessagesContainer.addView(TextView(requireContext()).apply {
+            text = "Auto-svar for SMS:"
+            textSize = 12f
+            setPadding(0, 0, 0, 10)
+            setTextColor(getColor(R.color.text_secondary))
+        })
+
+        smsSavedText = TextView(requireContext()).apply {
+            text = "✓ Lagret"
+            textSize = 11f
+            setTextColor(getColor(R.color.text_success))
+            visibility = View.GONE
+        }
+
+        smsReplyEdit = EditText(requireContext()).apply {
+            minLines = 3
+            maxLines = 5
+            setPadding(20, 20, 20, 20)
+            addTextChangedListener(createAutoSaveWatcher(smsSavedText) { msg ->
+                prefs.edit().putString("sms_reply_message", msg).apply()
+            })
+        }
+        separateMessagesContainer.addView(smsReplyEdit)
+        separateMessagesContainer.addView(smsSavedText)
+
+        separateMessagesContainer.addView(TextView(requireContext()).apply {
+            text = "Auto-svar for tapt anrop:"
+            textSize = 12f
+            setPadding(0, 40, 0, 10)
+            setTextColor(getColor(R.color.text_secondary))
+        })
+
+        callSavedText = TextView(requireContext()).apply {
+            text = "✓ Lagret"
+            textSize = 11f
+            setTextColor(getColor(R.color.text_success))
+            visibility = View.GONE
+        }
+
+        callReplyEdit = EditText(requireContext()).apply {
+            minLines = 3
+            maxLines = 5
+            setPadding(20, 20, 20, 20)
+            addTextChangedListener(createAutoSaveWatcher(callSavedText) { msg ->
+                prefs.edit().putString("call_reply_message", msg).apply()
+            })
+        }
+        separateMessagesContainer.addView(callReplyEdit)
+        separateMessagesContainer.addView(callSavedText)
+        layout.addView(separateMessagesContainer)
+
+        scrollView.addView(layout)
+        return scrollView
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadSettings()
+        updateAutoReplyLockState()
+        updateAutoReplyVisibility()
+        updateStatus()
+    }
+
+    private fun getEncryptedPreferences(): SharedPreferences {
+        return PreferencesManager.getEncryptedPreferences(requireContext())
+    }
+
+    private fun getColor(colorResId: Int): Int {
+        return ContextCompat.getColor(requireContext(), colorResId)
+    }
+
+    private fun createAutoSaveWatcher(
+        savedTextView: TextView?,
+        onSave: (String) -> Unit
+    ): TextWatcher {
+        var saveJob: Job? = null
+        // Bruk WeakReference for å unngå memory leak
+        val textViewRef = WeakReference(savedTextView)
+
+        return object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                if (!isAutoReplyLocked) {
+                    saveJob?.cancel()
+                    textViewRef.get()?.visibility = View.GONE
+
+                    saveJob = viewLifecycleOwner.lifecycleScope.launch {
+                        delay(1000)
+                        onSave(s.toString())
+                        updateStatus()
+
+                        textViewRef.get()?.visibility = View.VISIBLE
+                        delay(2000)
+                        textViewRef.get()?.visibility = View.GONE
+                    }
+                }
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        }
+    }
+
+    private fun updateAutoReplyVisibility() {
+        val autoReplyEnabled = prefs.getBoolean("auto_reply_enabled", false)
+        val useSameMessage = prefs.getBoolean("use_same_message", true)
+
+        sameMessageSwitch.visibility = if (autoReplyEnabled) View.VISIBLE else View.GONE
+        autoReplyLockButton.visibility = if (autoReplyEnabled) View.VISIBLE else View.GONE
+
+        if (autoReplyEnabled) {
+            if (useSameMessage) {
+                sameMessageContainer.visibility = View.VISIBLE
+                separateMessagesContainer.visibility = View.GONE
+            } else {
+                sameMessageContainer.visibility = View.GONE
+                separateMessagesContainer.visibility = View.VISIBLE
+            }
+        } else {
+            sameMessageContainer.visibility = View.GONE
+            separateMessagesContainer.visibility = View.GONE
+        }
+    }
+
+    private fun toggleAutoReplyLock() {
+        isAutoReplyLocked = !isAutoReplyLocked
+        prefs.edit().putBoolean("auto_reply_locked", isAutoReplyLocked).apply()
+        updateAutoReplyLockState()
+    }
+
+    private fun updateAutoReplyLockState() {
+        if (isAutoReplyLocked) {
+            autoReplyLockButton.text = "🔒 Lås opp auto-svar"
+            unifiedMessageEdit.isEnabled = false
+            smsReplyEdit.isEnabled = false
+            callReplyEdit.isEnabled = false
+            unifiedMessageEdit.setBackgroundColor(getColor(R.color.background_locked))
+            smsReplyEdit.setBackgroundColor(getColor(R.color.background_locked))
+            callReplyEdit.setBackgroundColor(getColor(R.color.background_locked))
+        } else {
+            autoReplyLockButton.text = "🔓 Lås auto-svar"
+            unifiedMessageEdit.isEnabled = true
+            smsReplyEdit.isEnabled = true
+            callReplyEdit.isEnabled = true
+            unifiedMessageEdit.setBackgroundColor(Color.WHITE)
+            smsReplyEdit.setBackgroundColor(Color.WHITE)
+            callReplyEdit.setBackgroundColor(Color.WHITE)
+        }
+    }
+
+    private fun loadSettings() {
+        toggleSwitch.isChecked = prefs.getBoolean("enabled", false)
+        autoReplySwitch.isChecked = prefs.getBoolean("auto_reply_enabled", false)
+        sameMessageSwitch.isChecked = prefs.getBoolean("use_same_message", true)
+
+        val unifiedMsg = prefs.getString("unified_reply_message", "")
+        if (unifiedMsg.isNullOrEmpty()) {
+            val defaultMsg = "Hei! Jeg kan ikke svare nå. Jeg får varsler på email, så jeg kontakter deg snart."
+            prefs.edit().putString("unified_reply_message", defaultMsg).apply()
+            unifiedMessageEdit.setText(defaultMsg)
+        } else {
+            unifiedMessageEdit.setText(unifiedMsg)
+        }
+
+        val smsMsg = prefs.getString("sms_reply_message", "")
+        if (smsMsg.isNullOrEmpty()) {
+            val defaultMsg = "Hei, jeg kan ikke svare på SMS nå. Jeg får varsel på email, så jeg kontakter deg snart."
+            prefs.edit().putString("sms_reply_message", defaultMsg).apply()
+            smsReplyEdit.setText(defaultMsg)
+        } else {
+            smsReplyEdit.setText(smsMsg)
+        }
+
+        val callMsg = prefs.getString("call_reply_message", "")
+        if (callMsg.isNullOrEmpty()) {
+            val defaultMsg = "Hei, jeg kan ikke svare telefonen nå. Send SMS eller email hvis viktig."
+            prefs.edit().putString("call_reply_message", defaultMsg).apply()
+            callReplyEdit.setText(defaultMsg)
+        } else {
+            callReplyEdit.setText(callMsg)
+        }
+    }
+
+    private fun updateStatus() {
+        val enabled = prefs.getBoolean("enabled", false)
+        // getString() med default value returnerer aldri null
+        val hasGmailAddress = prefs.getString("gmail_address", "")?.isNotEmpty() == true
+        val hasGmailPassword = prefs.getString("gmail_password", "")?.isNotEmpty() == true
+        val hasRecipientEmail = prefs.getString("email", "")?.isNotEmpty() == true
+        val hasNotificationAccess = isNotificationServiceEnabled()
+
+        when {
+            !hasNotificationAccess -> {
+                statusText.text = "⚠️ Trenger notifikasjonstilgang"
+                statusText.setTextColor(getColor(R.color.text_warning))
+            }
+            !hasGmailAddress || !hasGmailPassword || !hasRecipientEmail -> {
+                statusText.text = "⚙️ Mangler konfigurering"
+                statusText.setTextColor(getColor(R.color.text_warning))
+            }
+            enabled -> {
+                statusText.text = "✅ Aktiv og klar"
+                statusText.setTextColor(getColor(R.color.text_success))
+            }
+            else -> {
+                statusText.text = "⏸️ Pauset"
+                statusText.setTextColor(getColor(R.color.text_disabled))
+            }
+        }
+    }
+
+    private fun isNotificationServiceEnabled(): Boolean {
+        val enabledServices = Settings.Secure.getString(
+            requireContext().contentResolver,
+            "enabled_notification_listeners"
+        )
+        return enabledServices?.contains(requireContext().packageName) == true
+    }
+}
