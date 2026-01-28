@@ -27,6 +27,7 @@ class SettingsFragment : BaseFragment() {
     private lateinit var testEmailButton: Button
     private lateinit var notificationButton: Button
     private lateinit var requestPermButton: Button
+    private var restrictedSettingsButton: Button? = null
     private lateinit var permissionsStatusText: TextView
     private lateinit var prefs: SharedPreferences
 
@@ -170,12 +171,13 @@ class SettingsFragment : BaseFragment() {
 
         // Hjelpeknapp for begrensede innstillinger (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            layout.addView(Button(requireContext()).apply {
+            restrictedSettingsButton = Button(requireContext()).apply {
                 text = getString(R.string.restricted_settings_button)
                 textSize = 12f
                 setPadding(0, 30, 0, 0)
                 setOnClickListener { showRestrictedSettingsGuide() }
-            })
+            }
+            layout.addView(restrictedSettingsButton)
         }
 
         scrollView.addView(layout)
@@ -318,6 +320,10 @@ class SettingsFragment : BaseFragment() {
         // Skjul knapper hvis tillatelser er gitt
         notificationButton.visibility = if (hasNotificationAccess) View.GONE else View.VISIBLE
         requestPermButton.visibility = if (allPermsGranted) View.GONE else View.VISIBLE
+        
+        // Skjul hjelpeknapp for begrensede innstillinger hvis alle tillatelser er gitt
+        val allGranted = hasNotificationAccess && allPermsGranted
+        restrictedSettingsButton?.visibility = if (allGranted) View.GONE else View.VISIBLE
     }
 
     private fun showAppPasswordGuide() {
