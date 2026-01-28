@@ -35,6 +35,9 @@
     <string name="test_email_button">📧 Send test-email</string>
     <string name="test_email_sending">⏳ Sender...</string>
     <string name="test_email_error_empty">❌ Fyll ut alle felter først</string>
+    <string name="test_email_error_invalid_recipient">❌ Ugyldig mottaker email-adresse</string>
+    <string name="test_email_error_invalid_gmail">❌ Ugyldig Gmail-adresse</string>
+    <string name="test_email_warning_workspace">⚠️ Google Workspace: Sjekk at SMTP er aktivert for kontoen</string>
     <string name="permissions_header">Tillatelser</string>
     <string name="permissions_checking">Sjekker tillatelser…</string>
     <string name="notification_access_button">Gi varseltilgang</string>
@@ -46,6 +49,10 @@
     <string name="permissions_status_notification_ok">✅ Varseltilgang: OK\n</string>
     <string name="permissions_status_notification_missing">❌ Varseltilgang: Mangler\n</string>
     <string name="permissions_status_sms">SMS/Anrop tillatelser: %d/3</string>
+    <string name="restricted_settings_button">❓ Tillatelser avvist?</string>
+    <string name="restricted_settings_title">Begrensede innstillinger (Android 13+)</string>
+    <string name="restricted_settings_guide">Hvis tillatelser blir avvist automatisk, må du aktivere \"Tillat begrensede innstillinger\":\n\n1️⃣ Åpne Innstillinger\n2️⃣ Gå til Apper → Grevling\n3️⃣ Trykk på ⋮ (tre prikker) øverst\n4️⃣ Velg \"Tillat begrensede innstillinger\"\n5️⃣ Bekreft med enhetens PIN/mønster\n6️⃣ Gå tilbake og prøv igjen\n\n⚠️ Dette er en Android-sikkerhetsmekanisme for sideloadede apper.</string>
+    <string name="open_app_settings">Åpne app-innstillinger</string>
 
     <!-- MainActivity -->
     <string name="permissions_needed_toast">⚠️ Appen trenger alle tillatelser for å fungere. Nektet: %d</string>

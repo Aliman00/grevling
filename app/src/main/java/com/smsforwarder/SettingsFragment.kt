@@ -5,11 +5,11 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.Editable
 import android.text.InputType
-import android.text.TextWatcher
 import android.text.method.PasswordTransformationMethod
 import android.util.Patterns
 import android.view.LayoutInflater
@@ -18,13 +18,8 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-class SettingsFragment : Fragment() {
+class SettingsFragment : BaseFragment() {
 
     private lateinit var emailEditText: EditText
     private lateinit var gmailAddressEditText: EditText
@@ -85,9 +80,9 @@ class SettingsFragment : Fragment() {
         emailEditText = EditText(requireContext()).apply {
             hint = "din@email.no"
             inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-            addTextChangedListener(createAutoSaveWatcher { email ->
-                prefs.edit().putString("email", email).apply()
-            })
+            addTextChangedListener(createAutoSaveWatcher(
+                onSave = { email -> prefs.edit().putString("email", email).apply() }
+            ))
         }
         layout.addView(emailEditText)
 
@@ -100,9 +95,9 @@ class SettingsFragment : Fragment() {
         gmailAddressEditText = EditText(requireContext()).apply {
             hint = "dinbrukernavn@gmail.com"
             inputType = InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
-            addTextChangedListener(createAutoSaveWatcher { address ->
-                prefs.edit().putString("gmail_address", address).apply()
-            })
+            addTextChangedListener(createAutoSaveWatcher(
+                onSave = { address -> prefs.edit().putString("gmail_address", address).apply() }
+            ))
         }
         layout.addView(gmailAddressEditText)
 
@@ -122,9 +117,9 @@ class SettingsFragment : Fragment() {
             hint = "16-tegn App Password (uten mellomrom)"
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             transformationMethod = PasswordTransformationMethod.getInstance()
-            addTextChangedListener(createAutoSaveWatcher { password ->
-                prefs.edit().putString("gmail_password", password).apply()
-            })
+            addTextChangedListener(createAutoSaveWatcher(
+                onSave = { password -> prefs.edit().putString("gmail_password", password).apply() }
+            ))
         }
         layout.addView(gmailPasswordEditText)
 
@@ -173,6 +168,16 @@ class SettingsFragment : Fragment() {
         }
         layout.addView(requestPermButton)
 
+        // Hjelpeknapp for begrensede innstillinger (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            layout.addView(Button(requireContext()).apply {
+                text = getString(R.string.restricted_settings_button)
+                textSize = 12f
+                setPadding(0, 30, 0, 0)
+                setOnClickListener { showRestrictedSettingsGuide() }
+            })
+        }
+
         scrollView.addView(layout)
         return scrollView
     }
@@ -181,30 +186,6 @@ class SettingsFragment : Fragment() {
         super.onResume()
         loadSettings()
         updatePermissionsStatus()
-    }
-
-    private fun getEncryptedPreferences(): SharedPreferences {
-        return PreferencesManager.getEncryptedPreferences(requireContext())
-    }
-
-    private fun getColor(colorResId: Int): Int {
-        return ContextCompat.getColor(requireContext(), colorResId)
-    }
-
-    private fun createAutoSaveWatcher(onSave: (String) -> Unit): TextWatcher {
-        var saveJob: Job? = null
-
-        return object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                saveJob?.cancel()
-                saveJob = viewLifecycleOwner.lifecycleScope.launch {
-                    delay(1000)
-                    onSave(s.toString())
-                }
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        }
     }
 
     private fun openNotificationSettings() {
@@ -228,7 +209,7 @@ class SettingsFragment : Fragment() {
         if (recipientEmail.isEmpty() || gmailAddress.isEmpty() || gmailPassword.isEmpty()) {
             Toast.makeText(
                 requireContext(),
-                "❌ Fyll ut alle felter først",
+                getString(R.string.test_email_error_empty),
                 Toast.LENGTH_SHORT
             ).show()
             return
@@ -238,7 +219,7 @@ class SettingsFragment : Fragment() {
         if (!Patterns.EMAIL_ADDRESS.matcher(recipientEmail).matches()) {
             Toast.makeText(
                 requireContext(),
-                "❌ Ugyldig mottaker email-adresse",
+                getString(R.string.test_email_error_invalid_recipient),
                 Toast.LENGTH_SHORT
             ).show()
             return
@@ -247,7 +228,7 @@ class SettingsFragment : Fragment() {
         if (!Patterns.EMAIL_ADDRESS.matcher(gmailAddress).matches()) {
             Toast.makeText(
                 requireContext(),
-                "❌ Ugyldig Gmail-adresse",
+                getString(R.string.test_email_error_invalid_gmail),
                 Toast.LENGTH_SHORT
             ).show()
             return
@@ -261,13 +242,13 @@ class SettingsFragment : Fragment() {
             // Advarsel men tillat fortsettelse for Google Workspace
             Toast.makeText(
                 requireContext(),
-                "⚠️ Google Workspace: Sjekk at SMTP er aktivert for kontoen",
+                getString(R.string.test_email_warning_workspace),
                 Toast.LENGTH_LONG
             ).show()
         }
 
         testEmailButton.isEnabled = false
-        testEmailButton.text = "⏳ Sender..."
+        testEmailButton.text = getString(R.string.test_email_sending)
 
         EmailSender.testEmailConfig(
             gmailAddress,
@@ -280,7 +261,7 @@ class SettingsFragment : Fragment() {
                 if (!isAdded || view == null) return@runOnUiThread
 
                 testEmailButton.isEnabled = true
-                testEmailButton.text = "📧 Send test-email"
+                testEmailButton.text = getString(R.string.test_email_button)
 
                 Toast.makeText(
                     requireContext(),
@@ -388,5 +369,23 @@ class SettingsFragment : Fragment() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    private fun showRestrictedSettingsGuide() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.restricted_settings_title))
+            .setMessage(getString(R.string.restricted_settings_guide))
+            .setPositiveButton(getString(R.string.open_app_settings)) { _, _ ->
+                openAppSettings()
+            }
+            .setNegativeButton("OK") { dialog, _ -> dialog.dismiss() }
+            .show()
+    }
+
+    private fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package", requireContext().packageName, null)
+        }
+        startActivity(intent)
     }
 }

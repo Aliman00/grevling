@@ -20,10 +20,6 @@ object Logger {
         Log.w(tag, message)
     }
 
-    fun w(tag: String, message: String, throwable: Throwable) {
-        Log.w(tag, message, throwable)
-    }
-
     fun e(tag: String, message: String) {
         Log.e(tag, message)
     }

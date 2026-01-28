@@ -41,8 +41,9 @@ object AutoReplyHelper {
             return
         }
 
-        if (phoneNumber.isBlank()) {
-            Logger.w(TAG, "Ugyldig telefonnummer, hopper over auto-svar")
+        // Valider telefonnummer - må inneholde minst noen sifre
+        if (phoneNumber.isBlank() || !phoneNumber.any { it.isDigit() }) {
+            Logger.w(TAG, "Ugyldig telefonnummer format, hopper over auto-svar")
             return
         }
 

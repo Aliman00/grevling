@@ -3,22 +3,12 @@ package com.smsforwarder
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
-import android.provider.Settings
-import androidx.core.content.ContextCompat
-import android.text.Editable
-import android.text.TextWatcher
-import java.lang.ref.WeakReference
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-class HomeFragment : Fragment() {
+class HomeFragment : BaseFragment() {
 
     private lateinit var toggleSwitch: Switch
     private lateinit var autoReplySwitch: Switch
@@ -136,9 +126,12 @@ class HomeFragment : Fragment() {
             minLines = 3
             maxLines = 5
             setPadding(20, 20, 20, 20)
-            addTextChangedListener(createAutoSaveWatcher(unifiedSavedText) { msg ->
-                prefs.edit().putString("unified_reply_message", msg).apply()
-            })
+            addTextChangedListener(createAutoSaveWatcher(
+                savedIndicator = unifiedSavedText,
+                shouldSave = { !isAutoReplyLocked },
+                onSave = { msg -> prefs.edit().putString("unified_reply_message", msg).apply() },
+                onAfterSave = { updateStatus() }
+            ))
         }
         sameMessageContainer.addView(unifiedMessageEdit)
         sameMessageContainer.addView(unifiedSavedText)
@@ -168,9 +161,12 @@ class HomeFragment : Fragment() {
             minLines = 3
             maxLines = 5
             setPadding(20, 20, 20, 20)
-            addTextChangedListener(createAutoSaveWatcher(smsSavedText) { msg ->
-                prefs.edit().putString("sms_reply_message", msg).apply()
-            })
+            addTextChangedListener(createAutoSaveWatcher(
+                savedIndicator = smsSavedText,
+                shouldSave = { !isAutoReplyLocked },
+                onSave = { msg -> prefs.edit().putString("sms_reply_message", msg).apply() },
+                onAfterSave = { updateStatus() }
+            ))
         }
         separateMessagesContainer.addView(smsReplyEdit)
         separateMessagesContainer.addView(smsSavedText)
@@ -193,9 +189,12 @@ class HomeFragment : Fragment() {
             minLines = 3
             maxLines = 5
             setPadding(20, 20, 20, 20)
-            addTextChangedListener(createAutoSaveWatcher(callSavedText) { msg ->
-                prefs.edit().putString("call_reply_message", msg).apply()
-            })
+            addTextChangedListener(createAutoSaveWatcher(
+                savedIndicator = callSavedText,
+                shouldSave = { !isAutoReplyLocked },
+                onSave = { msg -> prefs.edit().putString("call_reply_message", msg).apply() },
+                onAfterSave = { updateStatus() }
+            ))
         }
         separateMessagesContainer.addView(callReplyEdit)
         separateMessagesContainer.addView(callSavedText)
@@ -211,44 +210,6 @@ class HomeFragment : Fragment() {
         updateAutoReplyLockState()
         updateAutoReplyVisibility()
         updateStatus()
-    }
-
-    private fun getEncryptedPreferences(): SharedPreferences {
-        return PreferencesManager.getEncryptedPreferences(requireContext())
-    }
-
-    private fun getColor(colorResId: Int): Int {
-        return ContextCompat.getColor(requireContext(), colorResId)
-    }
-
-    private fun createAutoSaveWatcher(
-        savedTextView: TextView?,
-        onSave: (String) -> Unit
-    ): TextWatcher {
-        var saveJob: Job? = null
-        // Bruk WeakReference for å unngå memory leak
-        val textViewRef = WeakReference(savedTextView)
-
-        return object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                if (!isAutoReplyLocked) {
-                    saveJob?.cancel()
-                    textViewRef.get()?.visibility = View.GONE
-
-                    saveJob = viewLifecycleOwner.lifecycleScope.launch {
-                        delay(1000)
-                        onSave(s.toString())
-                        updateStatus()
-
-                        textViewRef.get()?.visibility = View.VISIBLE
-                        delay(2000)
-                        textViewRef.get()?.visibility = View.GONE
-                    }
-                }
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        }
     }
 
     private fun updateAutoReplyVisibility() {
@@ -280,7 +241,7 @@ class HomeFragment : Fragment() {
 
     private fun updateAutoReplyLockState() {
         if (isAutoReplyLocked) {
-            autoReplyLockButton.text = "🔒 Lås opp auto-svar"
+            autoReplyLockButton.text = getString(R.string.lock_auto_reply)
             unifiedMessageEdit.isEnabled = false
             smsReplyEdit.isEnabled = false
             callReplyEdit.isEnabled = false
@@ -288,7 +249,7 @@ class HomeFragment : Fragment() {
             smsReplyEdit.setBackgroundColor(getColor(R.color.background_locked))
             callReplyEdit.setBackgroundColor(getColor(R.color.background_locked))
         } else {
-            autoReplyLockButton.text = "🔓 Lås auto-svar"
+            autoReplyLockButton.text = getString(R.string.unlock_auto_reply)
             unifiedMessageEdit.isEnabled = true
             smsReplyEdit.isEnabled = true
             callReplyEdit.isEnabled = true
@@ -305,7 +266,7 @@ class HomeFragment : Fragment() {
 
         val unifiedMsg = prefs.getString("unified_reply_message", "")
         if (unifiedMsg.isNullOrEmpty()) {
-            val defaultMsg = "Hei! Jeg kan ikke svare nå. Jeg får varsler på email, så jeg kontakter deg snart."
+            val defaultMsg = getString(R.string.default_unified_message)
             prefs.edit().putString("unified_reply_message", defaultMsg).apply()
             unifiedMessageEdit.setText(defaultMsg)
         } else {
@@ -314,7 +275,7 @@ class HomeFragment : Fragment() {
 
         val smsMsg = prefs.getString("sms_reply_message", "")
         if (smsMsg.isNullOrEmpty()) {
-            val defaultMsg = "Hei, jeg kan ikke svare på SMS nå. Jeg får varsel på email, så jeg kontakter deg snart."
+            val defaultMsg = getString(R.string.default_sms_message)
             prefs.edit().putString("sms_reply_message", defaultMsg).apply()
             smsReplyEdit.setText(defaultMsg)
         } else {
@@ -323,7 +284,7 @@ class HomeFragment : Fragment() {
 
         val callMsg = prefs.getString("call_reply_message", "")
         if (callMsg.isNullOrEmpty()) {
-            val defaultMsg = "Hei, jeg kan ikke svare telefonen nå. Send SMS eller email hvis viktig."
+            val defaultMsg = getString(R.string.default_call_message)
             prefs.edit().putString("call_reply_message", defaultMsg).apply()
             callReplyEdit.setText(defaultMsg)
         } else {
@@ -341,19 +302,19 @@ class HomeFragment : Fragment() {
 
         when {
             !hasNotificationAccess -> {
-                statusText.text = "⚠️ Trenger notifikasjonstilgang"
+                statusText.text = getString(R.string.status_needs_notification)
                 statusText.setTextColor(getColor(R.color.text_warning))
             }
             !hasGmailAddress || !hasGmailPassword || !hasRecipientEmail -> {
-                statusText.text = "⚙️ Mangler konfigurering"
+                statusText.text = getString(R.string.status_missing_config)
                 statusText.setTextColor(getColor(R.color.text_warning))
             }
             enabled -> {
-                statusText.text = "✅ Aktiv og klar"
+                statusText.text = getString(R.string.status_active)
                 statusText.setTextColor(getColor(R.color.text_success))
             }
             else -> {
-                statusText.text = "⏸️ Pauset"
+                statusText.text = getString(R.string.status_paused)
                 statusText.setTextColor(getColor(R.color.text_disabled))
             }
         }
