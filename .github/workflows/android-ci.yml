@@ -26,7 +26,6 @@ jobs:
       
     - name: Run lint
       run: ./gradlew lint
-      continue-on-error: true
       
     - name: Build debug APK
       run: ./gradlew assembleDebug
@@ -39,7 +38,7 @@ jobs:
       if: always()
       with:
         name: lint-reports
-        path: app/build/reports/lint-results-*.html
+        path: app/build/reports/**/*.html
         if-no-files-found: warn
         
     - name: Upload test reports
