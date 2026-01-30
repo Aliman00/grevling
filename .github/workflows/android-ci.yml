@@ -38,7 +38,9 @@ jobs:
       if: always()
       with:
         name: lint-reports
-        path: app/build/reports/**/*.html
+        path: |
+          app/build/reports/lint-results-*.html
+          app/build/reports/lint-results-*.xml
         if-no-files-found: warn
         
     - name: Upload test reports
