@@ -22,9 +22,9 @@ object EmailSender {
         PreferencesManager.getEncryptedPreferences(context)
 
     /**
-     * Escaper HTML special characters for å unngå HTML injection
+     * Escapes HTML special characters to prevent HTML injection
      */
-    private fun escapeHtml(text: String): String {
+    internal fun escapeHtml(text: String): String {
         return text
             .replace("&", "&amp;")
             .replace("<", "&lt;")
