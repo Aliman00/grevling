@@ -60,10 +60,20 @@
 
     <!-- Bottom Navigation -->
     <string name="nav_home">Hjem</string>
+    <string name="nav_apps">Apper</string>
     <string name="nav_settings">Innstillinger</string>
 
     <!-- Widget -->
     <string name="widget_status_active">Aktiv</string>
     <string name="widget_status_paused">Pauset</string>
     <string name="widget_description">Slå SMS-videresending av/på</string>
+
+    <!-- App Selection -->
+    <string name="app_selection_title">Overvåkede apper</string>
+    <string name="app_selection_subtitle">Velg hvilke apper som skal sende varsler til email</string>
+    <string name="selected_apps_count">%d apper valgt</string>
+    <string name="search_apps_hint">Søk etter apper…</string>
+    <string name="chip_all_apps">Alle apper</string>
+    <string name="chip_selected_apps">Valgte</string>
+    <string name="app_icon_description">App-ikon</string>
 </resources>

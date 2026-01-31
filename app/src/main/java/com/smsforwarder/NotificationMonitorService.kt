@@ -22,17 +22,84 @@ class NotificationMonitorService : NotificationListenerService() {
         }
     )
 
+    // Cache for processed app notifications (unngå duplikater)
+    private val processedAppNotifications = Collections.synchronizedMap(
+        object : LinkedHashMap<String, Long>(100, 0.75f, true) {
+            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Long>?): Boolean {
+                return size > 100
+            }
+        }
+    )
+
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val packageName = sbn.packageName
         val notification = sbn.notification
         val category = notification.category
 
-        // Mer robust deteksjon av tapt anrop
+        // Ignorer egne varsler
+        if (packageName == "com.smsforwarder") return
+
+        // Eksisterende: Tapt anrop
         if (category == Notification.CATEGORY_MISSED_CALL ||
             (packageName == "com.android.server.telecom" && isMissedCallNotification(notification))) {
 
             Logger.d(TAG, "Tapt anrop detektert via notifikasjon")
             handleMissedCall()
+            return
+        }
+
+        // NY: Håndter varsler fra valgte apper
+        handleAppNotification(sbn)
+    }
+
+    private fun handleAppNotification(sbn: StatusBarNotification) {
+        val prefs = PreferencesManager.getEncryptedPreferences(this)
+        val enabled = prefs.getBoolean("enabled", false)
+        
+        if (!enabled) return
+
+        val monitoredApps = prefs.getStringSet("monitored_apps", emptySet()) ?: emptySet()
+        
+        if (!monitoredApps.contains(sbn.packageName)) return
+
+        val notification = sbn.notification
+        val extras = notification.extras
+        
+        val title = extras.getString("android.title", "") ?: ""
+        val text = extras.getCharSequence("android.text", "")?.toString() ?: ""
+        
+        // Unngå tomme varsler
+        if (title.isEmpty() && text.isEmpty()) return
+
+        // Lag en unik nøkkel for denne varslingen
+        val notificationKey = "${sbn.packageName}:${title}:${text}"
+        val now = System.currentTimeMillis()
+        
+        // Sjekk om vi nylig har prosessert samme varsel (innen 30 sekunder)
+        val lastProcessed = processedAppNotifications[notificationKey]
+        if (lastProcessed != null && (now - lastProcessed) < 30000) {
+            Logger.d(TAG, "Duplikat varsel ignorert fra ${sbn.packageName}")
+            return
+        }
+        
+        processedAppNotifications[notificationKey] = now
+
+        val appName = getAppName(sbn.packageName)
+        Logger.d(TAG, "App-varsel fra $appName prosesseres")
+
+        EmailSender.sendEmail(
+            this,
+            "🔔 $appName: $title",
+            text.ifEmpty { "(Ingen tekst)" }
+        )
+    }
+
+    private fun getAppName(packageName: String): String {
+        return try {
+            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            packageManager.getApplicationLabel(appInfo).toString()
+        } catch (e: Exception) {
+            packageName
         }
     }
 
@@ -41,10 +108,6 @@ class NotificationMonitorService : NotificationListenerService() {
         val title = extras.getString("android.title", "")
         val text = extras.getCharSequence("android.text", "")?.toString() ?: ""
 
-        // Sjekk for tapt anrop i flere språk og varianter
-        // Norsk: "tapt", "ubesvart"
-        // Engelsk: "missed"
-        // Dette dekker de fleste Android-versjoner og språk
         return title.contains("tapt", ignoreCase = true) ||
                title.contains("missed", ignoreCase = true) ||
                title.contains("ubesvart", ignoreCase = true) ||
@@ -53,7 +116,6 @@ class NotificationMonitorService : NotificationListenerService() {
     }
 
     private fun handleMissedCall() {
-        // Sjekk at service ikke har blitt destroyed
         try {
             val projection = arrayOf(
                 CallLog.Calls.NUMBER,
@@ -61,7 +123,6 @@ class NotificationMonitorService : NotificationListenerService() {
                 CallLog.Calls.DATE
             )
 
-            // Bruk konstanter for ORDER BY for å unngå injection-mønster
             val sortOrder = CallLog.Calls.DATE + " DESC"
             val cursor: Cursor? = contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
@@ -81,7 +142,6 @@ class NotificationMonitorService : NotificationListenerService() {
                     val name = if (nameIndex >= 0) it.getString(nameIndex) ?: number else number
                     val timestamp = if (dateIndex >= 0) it.getLong(dateIndex) else 0L
 
-                    // Unngå duplikat-varsler for samme anrop
                     if (timestamp > 0 && processedCallTimestamps.containsKey(timestamp)) {
                         Logger.d(TAG, "Anrop allerede prosessert, hopper over")
                         return
@@ -91,13 +151,9 @@ class NotificationMonitorService : NotificationListenerService() {
                         processedCallTimestamps[timestamp] = true
                     }
 
-                    // Logging uten sensitiv data (GDPR-compliant)
                     Logger.d(TAG, "Tapt anrop prosesseres")
 
-                    // Send email-varsel
                     EmailSender.sendEmail(this, "📞 Tapt anrop: $name", "Nummer: $number")
-
-                    // Send auto-svar SMS
                     AutoReplyHelper.sendCallAutoReply(this, number)
                 }
             }
@@ -111,11 +167,12 @@ class NotificationMonitorService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
-        // Ikke nødvendig for tapte anrop
+        // Ikke nødvendig
     }
 
     override fun onDestroy() {
         super.onDestroy()
         processedCallTimestamps.clear()
+        processedAppNotifications.clear()
     }
 }
