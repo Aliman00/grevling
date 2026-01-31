@@ -40,5 +40,18 @@
             </intent-filter>
         </service>
 
+        <!-- Widget for hjemskjerm -->
+        <receiver
+            android:name=".ForwardingWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.smsforwarder.ACTION_TOGGLE_FORWARDING" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/forwarding_widget_info" />
+        </receiver>
+
     </application>
 </manifest>

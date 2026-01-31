@@ -63,6 +63,8 @@ class HomeFragment : BaseFragment() {
         toggleSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean("enabled", isChecked).apply()
             updateStatus()
+            // Oppdater widget når status endres i appen
+            ForwardingWidget.updateAllWidgets(requireContext())
         }
 
         autoReplySwitch.setOnCheckedChangeListener { _, isChecked ->

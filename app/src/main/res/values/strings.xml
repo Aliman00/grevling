@@ -61,4 +61,9 @@
     <!-- Bottom Navigation -->
     <string name="nav_home">Hjem</string>
     <string name="nav_settings">Innstillinger</string>
+
+    <!-- Widget -->
+    <string name="widget_status_active">Aktiv</string>
+    <string name="widget_status_paused">Pauset</string>
+    <string name="widget_description">Slå SMS-videresending av/på</string>
 </resources>
