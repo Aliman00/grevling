@@ -8,23 +8,26 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 
-class ForwardingWidget : AppWidgetProvider() {
+/**
+ * Mini-widget (1x1) - Bare et ikon som fungerer som på/av-knapp.
+ * Enkel og kompakt toggle for hjemskjermen.
+ */
+class ForwardingWidgetMini : AppWidgetProvider() {
 
     companion object {
-        const val ACTION_TOGGLE = "com.smsforwarder.ACTION_TOGGLE_FORWARDING"
-        private const val TAG = "ForwardingWidget"
+        const val ACTION_TOGGLE = "com.smsforwarder.ACTION_TOGGLE_MINI"
+        private const val TAG = "ForwardingWidgetMini"
 
         /**
-         * Oppdaterer alle widget-instanser.
-         * Kan kalles fra andre deler av appen når status endres.
+         * Oppdaterer alle mini-widget-instanser.
          */
         fun updateAllWidgets(context: Context) {
-            val intent = Intent(context, ForwardingWidget::class.java).apply {
+            val intent = Intent(context, ForwardingWidgetMini::class.java).apply {
                 action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
             }
             val widgetManager = AppWidgetManager.getInstance(context)
             val widgetIds = widgetManager.getAppWidgetIds(
-                ComponentName(context, ForwardingWidget::class.java)
+                ComponentName(context, ForwardingWidgetMini::class.java)
             )
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
             context.sendBroadcast(intent)
@@ -54,19 +57,19 @@ class ForwardingWidget : AppWidgetProvider() {
         val currentState = prefs.getBoolean("enabled", false)
         prefs.edit().putBoolean("enabled", !currentState).apply()
 
-        Logger.d(TAG, "Widget toggle: ${!currentState}")
+        Logger.d(TAG, "Mini widget toggle: ${!currentState}")
 
-        // Oppdater alle widgets
+        // Oppdater alle mini-widgets
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val widgetIds = appWidgetManager.getAppWidgetIds(
-            ComponentName(context, ForwardingWidget::class.java)
+            ComponentName(context, ForwardingWidgetMini::class.java)
         )
         for (widgetId in widgetIds) {
             updateWidget(context, appWidgetManager, widgetId)
         }
 
-        // Oppdater også mini-widgets
-        ForwardingWidgetMini.updateAllWidgets(context)
+        // Oppdater også de vanlige widgets
+        ForwardingWidget.updateAllWidgets(context)
     }
 
     private fun updateWidget(
@@ -77,30 +80,28 @@ class ForwardingWidget : AppWidgetProvider() {
         val prefs = PreferencesManager.getEncryptedPreferences(context)
         val isEnabled = prefs.getBoolean("enabled", false)
 
-        val views = RemoteViews(context.packageName, R.layout.widget_forwarding)
+        val views = RemoteViews(context.packageName, R.layout.widget_mini_forwarding)
 
         // Oppdater utseende basert på status
         if (isEnabled) {
-            views.setTextViewText(R.id.widget_status_text, context.getString(R.string.widget_status_active))
-            views.setTextViewText(R.id.widget_icon, "📱")
-            views.setInt(R.id.widget_background, "setBackgroundResource", R.drawable.widget_background_active)
+            views.setTextViewText(R.id.widget_mini_icon, "✅")
+            views.setInt(R.id.widget_mini_background, "setBackgroundResource", R.drawable.widget_mini_background_active)
         } else {
-            views.setTextViewText(R.id.widget_status_text, context.getString(R.string.widget_status_paused))
-            views.setTextViewText(R.id.widget_icon, "⏸️")
-            views.setInt(R.id.widget_background, "setBackgroundResource", R.drawable.widget_background_inactive)
+            views.setTextViewText(R.id.widget_mini_icon, "⏸️")
+            views.setInt(R.id.widget_mini_background, "setBackgroundResource", R.drawable.widget_mini_background_inactive)
         }
 
         // Sett opp klikk-handling
-        val toggleIntent = Intent(context, ForwardingWidget::class.java).apply {
+        val toggleIntent = Intent(context, ForwardingWidgetMini::class.java).apply {
             action = ACTION_TOGGLE
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            0,
+            1, // Bruker 1 for å unngå konflikt med hovedwidget
             toggleIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        views.setOnClickPendingIntent(R.id.widget_background, pendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_mini_background, pendingIntent)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }

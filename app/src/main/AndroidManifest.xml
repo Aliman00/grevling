@@ -53,5 +53,19 @@
                 android:resource="@xml/forwarding_widget_info" />
         </receiver>
 
+        <!-- Mini-widget (1x1) for hjemskjerm - enkel toggle-knapp -->
+        <receiver
+            android:name=".ForwardingWidgetMini"
+            android:exported="true"
+            android:label="@string/widget_mini_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.smsforwarder.ACTION_TOGGLE_MINI" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/forwarding_widget_mini_info" />
+        </receiver>
+
     </application>
 </manifest>

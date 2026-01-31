@@ -67,6 +67,8 @@
     <string name="widget_status_active">Aktiv</string>
     <string name="widget_status_paused">Pauset</string>
     <string name="widget_description">Slå SMS-videresending av/på</string>
+    <string name="widget_mini_name">Grevling Toggle</string>
+    <string name="widget_mini_description">Kompakt på/av-knapp for videresending</string>
 
     <!-- App Selection -->
     <string name="app_selection_title">Overvåkede apper</string>
