@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Grevling</string>
+    <string name="app_header_title">Grevling Appen</string>
 
     <!-- Home Fragment -->
     <string name="status_waiting">Status: Avventer innstillinger…</string>
