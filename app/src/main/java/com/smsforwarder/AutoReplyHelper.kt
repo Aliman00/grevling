@@ -75,7 +75,10 @@ object AutoReplyHelper {
         try {
             // Bruk moderne API (API 31+) hvis tilgjengelig, fall tilbake til deprecated API
             val smsManager = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                context.getSystemService(SmsManager::class.java)
+                context.getSystemService(SmsManager::class.java) ?: run {
+                    Logger.e(TAG, "SmsManager ikke tilgjengelig (ingen SIM?)")
+                    return
+                }
             } else {
                 @Suppress("DEPRECATION")
                 SmsManager.getDefault()

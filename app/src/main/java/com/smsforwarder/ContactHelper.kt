@@ -30,7 +30,13 @@ object ContactHelper {
         } catch (e: SQLException) {
             Logger.e(TAG, "Database-feil ved kontaktoppslag", e)
         } catch (e: IllegalArgumentException) {
-            Logger.e(TAG, "Ugyldig telefonnummer: $phoneNumber", e)
+            // Masker telefonnummer for GDPR-compliance
+            val maskedNumber = if (phoneNumber.length > 4) {
+                "${phoneNumber.take(2)}***${phoneNumber.takeLast(2)}"
+            } else {
+                "***"
+            }
+            Logger.e(TAG, "Ugyldig telefonnummer format: $maskedNumber", e)
         }
         return null
     }

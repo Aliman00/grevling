@@ -96,7 +96,15 @@ class AppSelectionFragment : BaseFragment() {
             val pm = requireContext().packageManager
             val selectedApps = prefs.getStringSet("monitored_apps", emptySet()) ?: emptySet()
 
-            val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            // Bruk moderne API for Android 13+ (TIRAMISU)
+            val installedApps = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(PackageManager.GET_META_DATA.toLong()))
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            }
+
+            val apps = installedApps
                 .filter { appInfo ->
                     // Filtrer ut system-apper uten launcher icon
                     pm.getLaunchIntentForPackage(appInfo.packageName) != null

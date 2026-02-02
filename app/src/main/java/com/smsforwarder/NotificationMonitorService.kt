@@ -63,7 +63,7 @@ class NotificationMonitorService : NotificationListenerService() {
         if (!monitoredApps.contains(sbn.packageName)) return
 
         val notification = sbn.notification
-        val extras = notification.extras
+        val extras = notification.extras ?: return // Sikker null-håndtering
         
         val title = extras.getString("android.title", "") ?: ""
         val text = extras.getCharSequence("android.text", "")?.toString() ?: ""
@@ -96,7 +96,12 @@ class NotificationMonitorService : NotificationListenerService() {
 
     private fun getAppName(packageName: String): String {
         return try {
-            val appInfo = packageManager.getApplicationInfo(packageName, 0)
+            val appInfo = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getApplicationInfo(packageName, android.content.pm.PackageManager.ApplicationInfoFlags.of(0))
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getApplicationInfo(packageName, 0)
+            }
             packageManager.getApplicationLabel(appInfo).toString()
         } catch (e: Exception) {
             packageName

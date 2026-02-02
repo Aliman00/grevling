@@ -17,12 +17,52 @@ object EmailSender {
     private const val EMAIL_DISPLAY_NAME = "Grevling Appen"
     private const val MAX_EMAILS_PER_MINUTE = 10
     private const val MAX_RETRY_ATTEMPTS = 3
+    private const val EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS = 5L
+    private const val MAX_RATE_LIMIT_WAIT_ATTEMPTS = 24 // 2 minutter maks venting
 
-    // Begrens til maks 3 samtidige e-poster
-    private val emailExecutor = Executors.newFixedThreadPool(3) as ThreadPoolExecutor
+    // Begrens til maks 3 samtidige e-poster (reinitialiserbar)
+    @Volatile
+    private var emailExecutor = createExecutor()
     
     // Rate-limiting: tidsstempler for sendte e-poster (sliding window)
     private val sentTimestamps = LinkedList<Long>()
+
+    private fun createExecutor(): ThreadPoolExecutor {
+        return Executors.newFixedThreadPool(3) as ThreadPoolExecutor
+    }
+
+    /**
+     * Henter executor, reinitaliserer hvis nødvendig.
+     */
+    @Synchronized
+    private fun getExecutor(): ThreadPoolExecutor {
+        if (emailExecutor.isShutdown || emailExecutor.isTerminated) {
+            Logger.d(TAG, "Reinitaliserer email executor")
+            emailExecutor = createExecutor()
+        }
+        return emailExecutor
+    }
+
+    /**
+     * Stenger executor gracefully. Bør kalles ved app-terminering.
+     * Venter maks 5 sekunder på at pågående oppgaver fullføres.
+     */
+    fun shutdown() {
+        try {
+            Logger.d(TAG, "Stenger email executor...")
+            emailExecutor.shutdown()
+            if (!emailExecutor.awaitTermination(EXECUTOR_SHUTDOWN_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS)) {
+                Logger.w(TAG, "Executor tok for lang tid, tvinger shutdown")
+                emailExecutor.shutdownNow()
+            }
+            sentTimestamps.clear()
+            Logger.d(TAG, "Email executor stengt")
+        } catch (e: InterruptedException) {
+            Logger.e(TAG, "Shutdown avbrutt", e)
+            emailExecutor.shutdownNow()
+            Thread.currentThread().interrupt()
+        }
+    }
 
     private fun getEncryptedPreferences(context: Context) =
         PreferencesManager.getEncryptedPreferences(context)
@@ -158,11 +198,18 @@ object EmailSender {
             return
         }
 
-        emailExecutor.execute {
-            // Vent til rate-limit tillater sending
-            while (!canSendEmail()) {
-                Logger.d(TAG, "Rate-limit nådd, venter...")
-                Thread.sleep(5000) // Sjekk hvert 5. sekund
+        getExecutor().execute {
+            // Vent til rate-limit tillater sending (maks 2 minutter)
+            var waitAttempts = 0
+            while (!canSendEmail() && waitAttempts < MAX_RATE_LIMIT_WAIT_ATTEMPTS) {
+                Logger.d(TAG, "Rate-limit nådd, venter... (forsøk ${waitAttempts + 1}/$MAX_RATE_LIMIT_WAIT_ATTEMPTS)")
+                Thread.sleep(5000)
+                waitAttempts++
+            }
+
+            if (waitAttempts >= MAX_RATE_LIMIT_WAIT_ATTEMPTS) {
+                Logger.w(TAG, "Rate-limit timeout etter 2 minutter, dropper email")
+                return@execute
             }
 
             try {

@@ -1,9 +1,7 @@
 package com.smsforwarder
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
@@ -17,20 +15,13 @@ class ForwardingWidgetMini : AppWidgetProvider() {
     companion object {
         const val ACTION_TOGGLE = "com.smsforwarder.ACTION_TOGGLE_MINI"
         private const val TAG = "ForwardingWidgetMini"
+        private const val REQUEST_CODE = 1
 
         /**
          * Oppdaterer alle mini-widget-instanser.
          */
         fun updateAllWidgets(context: Context) {
-            val intent = Intent(context, ForwardingWidgetMini::class.java).apply {
-                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-            }
-            val widgetManager = AppWidgetManager.getInstance(context)
-            val widgetIds = widgetManager.getAppWidgetIds(
-                ComponentName(context, ForwardingWidgetMini::class.java)
-            )
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
-            context.sendBroadcast(intent)
+            WidgetHelper.updateAllWidgetsOfType(context, ForwardingWidgetMini::class.java)
         }
     }
 
@@ -53,23 +44,7 @@ class ForwardingWidgetMini : AppWidgetProvider() {
     }
 
     private fun toggleForwarding(context: Context) {
-        val prefs = PreferencesManager.getEncryptedPreferences(context)
-        val currentState = prefs.getBoolean("enabled", false)
-        prefs.edit().putBoolean("enabled", !currentState).apply()
-
-        Logger.d(TAG, "Mini widget toggle: ${!currentState}")
-
-        // Oppdater alle mini-widgets
-        val appWidgetManager = AppWidgetManager.getInstance(context)
-        val widgetIds = appWidgetManager.getAppWidgetIds(
-            ComponentName(context, ForwardingWidgetMini::class.java)
-        )
-        for (widgetId in widgetIds) {
-            updateWidget(context, appWidgetManager, widgetId)
-        }
-
-        // Oppdater også de vanlige widgets
-        ForwardingWidget.updateAllWidgets(context)
+        WidgetHelper.toggleForwarding(context, TAG)
     }
 
     private fun updateWidget(
@@ -77,9 +52,7 @@ class ForwardingWidgetMini : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int
     ) {
-        val prefs = PreferencesManager.getEncryptedPreferences(context)
-        val isEnabled = prefs.getBoolean("enabled", false)
-
+        val isEnabled = WidgetHelper.isForwardingEnabled(context)
         val views = RemoteViews(context.packageName, R.layout.widget_mini_forwarding)
 
         // Oppdater utseende basert på status
@@ -92,14 +65,8 @@ class ForwardingWidgetMini : AppWidgetProvider() {
         }
 
         // Sett opp klikk-handling
-        val toggleIntent = Intent(context, ForwardingWidgetMini::class.java).apply {
-            action = ACTION_TOGGLE
-        }
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            1, // Bruker 1 for å unngå konflikt med hovedwidget
-            toggleIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        val pendingIntent = WidgetHelper.createTogglePendingIntent(
+            context, ForwardingWidgetMini::class.java, ACTION_TOGGLE, REQUEST_CODE
         )
         views.setOnClickPendingIntent(R.id.widget_mini_background, pendingIntent)
 
