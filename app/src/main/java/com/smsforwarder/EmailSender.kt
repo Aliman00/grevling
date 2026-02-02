@@ -4,6 +4,7 @@ import android.content.Context
 import java.util.Properties
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadPoolExecutor
+import java.util.LinkedList
 import javax.mail.*
 import javax.mail.internet.*
 
@@ -14,12 +15,77 @@ object EmailSender {
     private const val SMTP_PORT = 587
     private const val SMTP_TIMEOUT = "10000"
     private const val EMAIL_DISPLAY_NAME = "Grevling Appen"
+    private const val MAX_EMAILS_PER_MINUTE = 10
+    private const val MAX_RETRY_ATTEMPTS = 3
 
     // Begrens til maks 3 samtidige e-poster
     private val emailExecutor = Executors.newFixedThreadPool(3) as ThreadPoolExecutor
+    
+    // Rate-limiting: tidsstempler for sendte e-poster (sliding window)
+    private val sentTimestamps = LinkedList<Long>()
 
     private fun getEncryptedPreferences(context: Context) =
         PreferencesManager.getEncryptedPreferences(context)
+
+    /**
+     * Rate-limiter: sjekker om vi kan sende e-post nå (maks 10 per minutt)
+     */
+    @Synchronized
+    private fun canSendEmail(): Boolean {
+        val now = System.currentTimeMillis()
+        val oneMinuteAgo = now - 60_000
+        
+        // Fjern gamle tidsstempler (eldre enn 1 minutt)
+        sentTimestamps.removeIf { it < oneMinuteAgo }
+        
+        return sentTimestamps.size < MAX_EMAILS_PER_MINUTE
+    }
+
+    /**
+     * Registrer at en e-post ble sendt (for rate-limiting)
+     */
+    @Synchronized
+    private fun registerEmailSent() {
+        sentTimestamps.add(System.currentTimeMillis())
+    }
+
+    /**
+     * Sender e-post med retry-logikk (maks 3 forsøk med exponential backoff)
+     */
+    private fun sendWithRetry(
+        session: Session,
+        message: MimeMessage,
+        attempt: Int = 1
+    ) {
+        try {
+            Transport.send(message)
+            registerEmailSent()
+            Logger.d(TAG, "Email sendt vellykket${if (attempt > 1) " (forsøk $attempt)" else ""}")
+        } catch (e: Exception) {
+            if (attempt < MAX_RETRY_ATTEMPTS && isRetriableError(e)) {
+                val backoffMs = 1000L * (1 shl (attempt - 1)) // 1s, 2s, 4s
+                Logger.w(TAG, "Email feilet (forsøk $attempt/$MAX_RETRY_ATTEMPTS), prøver igjen om ${backoffMs}ms")
+                Thread.sleep(backoffMs)
+                sendWithRetry(session, message, attempt + 1)
+            } else {
+                Logger.e(TAG, "Email feilet etter $attempt forsøk", e)
+                throw e
+            }
+        }
+    }
+
+    /**
+     * Sjekker om feilen er retriable (nettverksfeil, timeouts, etc)
+     */
+    private fun isRetriableError(e: Exception): Boolean {
+        return when (e) {
+            is MessagingException -> {
+                // Ikke retry auth-feil, men retry nettverksfeil
+                e !is AuthenticationFailedException
+            }
+            else -> true
+        }
+    }
 
     /**
      * Escapes HTML special characters to prevent HTML injection
@@ -93,17 +159,21 @@ object EmailSender {
         }
 
         emailExecutor.execute {
+            // Vent til rate-limit tillater sending
+            while (!canSendEmail()) {
+                Logger.d(TAG, "Rate-limit nådd, venter...")
+                Thread.sleep(5000) // Sjekk hvert 5. sekund
+            }
+
             try {
                 val session = createSession(gmailAddress, gmailPassword)
-                // Escape HTML for sikkerhet
                 val htmlBody = "<h3>${escapeHtml(subject)}</h3><p>${escapeHtml(body)}</p>"
                 val message = createMessage(session, gmailAddress, toEmail, subject, htmlBody)
 
-                Transport.send(message)
-                Logger.d(TAG, "Email sendt vellykket")
+                sendWithRetry(session, message)
 
             } catch (e: Exception) {
-                Logger.e(TAG, "Feil ved sending av email", e)
+                Logger.e(TAG, "Email feilet permanent", e)
             }
         }
     }
