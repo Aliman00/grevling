@@ -154,32 +154,18 @@ class HomeFragment : BaseFragment() {
         autoReplySwitch.isChecked = prefs.getBoolean("auto_reply_enabled", false)
         sameMessageSwitch.isChecked = prefs.getBoolean("use_same_message", true)
 
-        val unifiedMsg = prefs.getString("unified_reply_message", "")
-        if (unifiedMsg.isNullOrEmpty()) {
-            val defaultMsg = getString(R.string.default_unified_message)
-            prefs.edit().putString("unified_reply_message", defaultMsg).apply()
-            unifiedMessageEdit.setText(defaultMsg)
-        } else {
-            unifiedMessageEdit.setText(unifiedMsg)
-        }
+        // Last meldinger - bruk default kun for visning, ikke skriv til prefs før bruker endrer
+        val unifiedMsg = prefs.getString("unified_reply_message", null)
+            ?: getString(R.string.default_unified_message)
+        unifiedMessageEdit.setText(unifiedMsg)
 
-        val smsMsg = prefs.getString("sms_reply_message", "")
-        if (smsMsg.isNullOrEmpty()) {
-            val defaultMsg = getString(R.string.default_sms_message)
-            prefs.edit().putString("sms_reply_message", defaultMsg).apply()
-            smsReplyEdit.setText(defaultMsg)
-        } else {
-            smsReplyEdit.setText(smsMsg)
-        }
+        val smsMsg = prefs.getString("sms_reply_message", null)
+            ?: getString(R.string.default_sms_message)
+        smsReplyEdit.setText(smsMsg)
 
-        val callMsg = prefs.getString("call_reply_message", "")
-        if (callMsg.isNullOrEmpty()) {
-            val defaultMsg = getString(R.string.default_call_message)
-            prefs.edit().putString("call_reply_message", defaultMsg).apply()
-            callReplyEdit.setText(defaultMsg)
-        } else {
-            callReplyEdit.setText(callMsg)
-        }
+        val callMsg = prefs.getString("call_reply_message", null)
+            ?: getString(R.string.default_call_message)
+        callReplyEdit.setText(callMsg)
     }
 
     private fun updateStatus() {

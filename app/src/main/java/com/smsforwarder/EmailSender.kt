@@ -234,7 +234,7 @@ object EmailSender {
         recipientEmail: String,
         onResult: (Boolean, String) -> Unit
     ) {
-        emailExecutor.execute {
+        getExecutor().execute {
             var success = false
             var message: String
 
