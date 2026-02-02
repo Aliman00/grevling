@@ -29,9 +29,10 @@ object WidgetHelper {
 
         Logger.d(TAG, "$callerTag toggle: ${!currentState}")
 
-        // Oppdater begge widget-typer
+        // Oppdater alle widget-typer
         updateAllWidgetsOfType(context, ForwardingWidget::class.java)
         updateAllWidgetsOfType(context, ForwardingWidgetMini::class.java)
+        updateAllWidgetsOfType(context, StatsWidget::class.java)
     }
 
     /**

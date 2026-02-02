@@ -1,42 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Oppdatert widget layout 3x1 - med logo, statistikk og status -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="8dp"
-    android:background="@drawable/widget_background_inactive">
+    android:padding="12dp"
+    android:background="@drawable/widget_background_modern">
 
-    <TextView
-        android:id="@+id/widget_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="⏸️"
-        android:textSize="20sp"
-        android:layout_marginEnd="8dp" />
+    <!-- Grevling ikon (rundt) -->
+    <ImageView
+        android:id="@+id/widget_logo"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="12dp"
+        android:src="@drawable/grevling_icon_round"
+        android:contentDescription="@string/app_name" />
 
+    <!-- Info kolonne -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/app_name"
+            android:text="@string/app_header_title"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:singleLine="true" />
+
+        <TextView
+            android:id="@+id/widget_forwarded_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 forwarded today"
             android:textSize="11sp"
-            android:textColor="#CCFFFFFF" />
+            android:textColor="#C0FFFFFF" />
+
+        <TextView
+            android:id="@+id/widget_last_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Last: Never"
+            android:textSize="11sp"
+            android:textColor="#C0FFFFFF" />
+
+    </LinearLayout>
+
+    <!-- Status badge -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp">
+
+        <ImageView
+            android:id="@+id/widget_status_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/widget_status_dot_active"
+            android:contentDescription="Status" />
 
         <TextView
             android:id="@+id/widget_status_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/widget_status_paused"
-            android:textSize="13sp"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold" />
-
+            android:text="@string/widget_status_active"
+            android:textSize="12sp"
+            android:textColor="#A8E6CF" />
     </LinearLayout>
 
 </LinearLayout>

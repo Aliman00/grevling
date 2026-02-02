@@ -46,6 +46,9 @@ class SmsReceiver : BroadcastReceiver() {
                 "Melding: $fullMessage"
             )
 
+            // Registrer statistikk
+            ForwardingStats.recordSmsForwarded(context)
+
             // Send auto-svar SMS (kun én gang)
             AutoReplyHelper.sendSmsAutoReply(context, phoneNumber)
         }

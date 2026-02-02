@@ -159,6 +159,10 @@ class NotificationMonitorService : NotificationListenerService() {
                     Logger.d(TAG, "Tapt anrop prosesseres")
 
                     EmailSender.sendEmail(this, "📞 Tapt anrop: $name", "Nummer: $number")
+                    
+                    // Registrer statistikk
+                    ForwardingStats.recordCallForwarded(this)
+                    
                     AutoReplyHelper.sendCallAutoReply(this, number)
                 }
             }

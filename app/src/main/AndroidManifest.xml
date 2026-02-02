@@ -75,5 +75,19 @@
                 android:resource="@xml/forwarding_widget_mini_info" />
         </receiver>
 
+        <!-- Stats Widget (2x2) - viser statistikk med pause/resume knapp -->
+        <receiver
+            android:name=".StatsWidget"
+            android:exported="true"
+            android:label="@string/widget_stats_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.smsforwarder.ACTION_TOGGLE_STATS" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/stats_widget_info" />
+        </receiver>
+
     </application>
 </manifest>

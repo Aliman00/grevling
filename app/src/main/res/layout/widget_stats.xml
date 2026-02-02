@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stats Widget 3x1 - Viser statistikk og toggle-knapp -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_stats_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:gravity="center_vertical"
+    android:background="@drawable/widget_background_modern">
+
+    <!-- Grevling ikon (rundt) -->
+    <ImageView
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="12dp"
+        android:src="@drawable/grevling_icon_round"
+        android:contentDescription="@string/app_name" />
+
+    <!-- Midt: Tittel og stats -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_header_title"
+                android:textSize="15sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:singleLine="true" />
+
+            <ImageView
+                android:id="@+id/widget_status_dot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/widget_status_dot_active"
+                android:contentDescription="Status" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/widget_stats_line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 SMS · 0 calls"
+            android:textSize="12sp"
+            android:textColor="#C0FFFFFF"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- Høyre: Toggle button -->
+    <FrameLayout
+        android:id="@+id/widget_toggle_button"
+        android:layout_width="72dp"
+        android:layout_height="34dp"
+        android:background="@drawable/widget_button_pause">
+
+        <TextView
+            android:id="@+id/widget_button_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/widget_button_pause"
+            android:textSize="11sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+</LinearLayout>

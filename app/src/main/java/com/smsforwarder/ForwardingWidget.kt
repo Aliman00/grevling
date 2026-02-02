@@ -52,15 +52,23 @@ class ForwardingWidget : AppWidgetProvider() {
         val isEnabled = WidgetHelper.isForwardingEnabled(context)
         val views = RemoteViews(context.packageName, R.layout.widget_forwarding)
 
-        // Oppdater utseende basert på status
+        // Hent statistikk
+        val totalCount = ForwardingStats.getTotalCountToday(context)
+        val lastTime = ForwardingStats.getLastForwardedTimeAgo(context)
+
+        // Oppdater statistikk-tekster
+        views.setTextViewText(R.id.widget_forwarded_count, "$totalCount forwarded today")
+        views.setTextViewText(R.id.widget_last_time, "Last: $lastTime")
+
+        // Oppdater status basert på enabled
         if (isEnabled) {
             views.setTextViewText(R.id.widget_status_text, context.getString(R.string.widget_status_active))
-            views.setTextViewText(R.id.widget_icon, "📱")
-            views.setInt(R.id.widget_background, "setBackgroundResource", R.drawable.widget_background_active)
+            views.setImageViewResource(R.id.widget_status_dot, R.drawable.widget_status_dot_active)
+            views.setTextColor(R.id.widget_status_text, 0xFFA8E6CF.toInt())
         } else {
             views.setTextViewText(R.id.widget_status_text, context.getString(R.string.widget_status_paused))
-            views.setTextViewText(R.id.widget_icon, "⏸️")
-            views.setInt(R.id.widget_background, "setBackgroundResource", R.drawable.widget_background_inactive)
+            views.setImageViewResource(R.id.widget_status_dot, R.drawable.widget_status_dot_inactive)
+            views.setTextColor(R.id.widget_status_text, 0xFF9CA3AF.toInt())
         }
 
         // Sett opp klikk-handling

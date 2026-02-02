@@ -65,11 +65,15 @@
     <string name="nav_settings">Innstillinger</string>
 
     <!-- Widget -->
-    <string name="widget_status_active">Aktiv</string>
-    <string name="widget_status_paused">Pauset</string>
+    <string name="widget_status_active">Active</string>
+    <string name="widget_status_paused">Paused</string>
     <string name="widget_description">Slå SMS-videresending av/på</string>
     <string name="widget_mini_name">Grevling Toggle</string>
     <string name="widget_mini_description">Kompakt på/av-knapp for videresending</string>
+    <string name="widget_stats_name">Grevling Stats</string>
+    <string name="widget_stats_description">Viser statistikk og toggle-knapp</string>
+    <string name="widget_button_pause">PAUSE</string>
+    <string name="widget_button_activate">ACTIVATE</string>
 
     <!-- App Selection -->
     <string name="app_selection_title">Overvåkede apper</string>

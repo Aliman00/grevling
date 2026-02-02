@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Resume-knapp bakgrunn for Stats Widget -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#4CAF50" />
-    <corners android:radius="12dp" />
+    <solid android:color="#81C784" />
+    <corners android:radius="28dp" />
 </shape>
