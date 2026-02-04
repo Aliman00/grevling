@@ -1,22 +1,27 @@
 package com.smsforwarder
 
+import android.animation.ObjectAnimator
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.card.MaterialCardView
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 
 class HomeFragment : BaseFragment() {
 
-    private lateinit var statusCard: MaterialCardView
     private lateinit var statusText: TextView
-    private lateinit var toggleSwitch: MaterialSwitch
+    private lateinit var statusRing: View
+    private lateinit var forwardingToText: TextView
+    private lateinit var toggleButton: LinearLayout
+    private lateinit var toggleButtonIcon: ImageView
+    private lateinit var toggleButtonText: TextView
     private lateinit var autoReplySwitch: MaterialSwitch
     private lateinit var autoReplyOptionsContainer: LinearLayout
     private lateinit var autoReplyLockButton: MaterialButton
@@ -42,10 +47,15 @@ class HomeFragment : BaseFragment() {
         prefs = getEncryptedPreferences()
         isAutoReplyLocked = prefs.getBoolean("auto_reply_locked", true)
 
-        // Bind views
-        statusCard = view.findViewById(R.id.statusCard)
+        // Bind views - new hero header
         statusText = view.findViewById(R.id.statusText)
-        toggleSwitch = view.findViewById(R.id.toggleSwitch)
+        statusRing = view.findViewById(R.id.statusRing)
+        forwardingToText = view.findViewById(R.id.forwardingToText)
+        toggleButton = view.findViewById(R.id.toggleButton)
+        toggleButtonIcon = view.findViewById(R.id.toggleButtonIcon)
+        toggleButtonText = view.findViewById(R.id.toggleButtonText)
+        
+        // Bind views - auto reply section
         autoReplySwitch = view.findViewById(R.id.autoReplySwitch)
         autoReplyOptionsContainer = view.findViewById(R.id.autoReplyOptionsContainer)
         autoReplyLockButton = view.findViewById(R.id.autoReplyLockButton)
@@ -59,11 +69,11 @@ class HomeFragment : BaseFragment() {
         callReplyEdit = view.findViewById(R.id.callReplyEdit)
         callSavedText = view.findViewById(R.id.callSavedText)
 
-        // Setup listeners
-        toggleSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("enabled", isChecked).apply()
+        // Setup toggle button click
+        toggleButton.setOnClickListener {
+            val isEnabled = prefs.getBoolean("enabled", false)
+            prefs.edit().putBoolean("enabled", !isEnabled).apply()
             updateStatus()
-            // Oppdater widget når status endres i appen (context-sikker)
             context?.let { ForwardingWidget.updateAllWidgets(it) }
         }
 
@@ -110,6 +120,17 @@ class HomeFragment : BaseFragment() {
         updateAutoReplyLockState()
         updateAutoReplyVisibility()
         updateStatus()
+        updateForwardingInfo()
+    }
+
+    private fun updateForwardingInfo() {
+        // Update forwarding destination
+        val recipientEmail = prefs.getString("email", "") ?: ""
+        forwardingToText.text = if (recipientEmail.isNotEmpty()) {
+            getString(R.string.forwarding_to_format, recipientEmail)
+        } else {
+            getString(R.string.forwarding_to_placeholder)
+        }
     }
 
     private fun updateAutoReplyVisibility() {
@@ -150,7 +171,7 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun loadSettings() {
-        toggleSwitch.isChecked = prefs.getBoolean("enabled", false)
+        // Load auto-reply settings
         autoReplySwitch.isChecked = prefs.getBoolean("auto_reply_enabled", false)
         sameMessageSwitch.isChecked = prefs.getBoolean("use_same_message", true)
 
@@ -175,22 +196,35 @@ class HomeFragment : BaseFragment() {
         val hasRecipientEmail = prefs.getString("email", "")?.isNotEmpty() == true
         val hasNotificationAccess = NotificationHelper.isNotificationServiceEnabled(requireContext())
 
+        val hasWarning = !hasNotificationAccess || !hasGmailAddress || !hasGmailPassword || !hasRecipientEmail
+
         when {
-            !hasNotificationAccess -> {
-                statusText.text = getString(R.string.status_needs_notification)
-                statusCard.setCardBackgroundColor(getColor(R.color.status_warning_container))
-            }
-            !hasGmailAddress || !hasGmailPassword || !hasRecipientEmail -> {
-                statusText.text = getString(R.string.status_missing_config)
-                statusCard.setCardBackgroundColor(getColor(R.color.status_warning_container))
+            hasWarning -> {
+                // Show warning state
+                statusText.text = getString(R.string.status_display_warning)
+                statusText.setTextColor(getColor(R.color.status_warning))
+                statusRing.setBackgroundResource(R.drawable.circle_ring_paused)
+                toggleButton.setBackgroundResource(R.drawable.button_activate_background)
+                toggleButtonIcon.setImageResource(R.drawable.ic_play)
+                toggleButtonText.text = getString(R.string.button_activate)
             }
             enabled -> {
-                statusText.text = getString(R.string.status_active)
-                statusCard.setCardBackgroundColor(getColor(R.color.status_success_container))
+                // Active state - green ring
+                statusText.text = getString(R.string.status_display_active)
+                statusText.setTextColor(getColor(R.color.status_active_green))
+                statusRing.setBackgroundResource(R.drawable.circle_ring_active)
+                toggleButton.setBackgroundResource(R.drawable.button_pause_background)
+                toggleButtonIcon.setImageResource(R.drawable.ic_pause)
+                toggleButtonText.text = getString(R.string.button_pause)
             }
             else -> {
-                statusText.text = getString(R.string.status_paused)
-                statusCard.setCardBackgroundColor(getColor(R.color.md_surface_variant))
+                // Paused state - red ring
+                statusText.text = getString(R.string.status_display_paused)
+                statusText.setTextColor(getColor(R.color.status_paused_red))
+                statusRing.setBackgroundResource(R.drawable.circle_ring_paused)
+                toggleButton.setBackgroundResource(R.drawable.button_activate_background)
+                toggleButtonIcon.setImageResource(R.drawable.ic_play)
+                toggleButtonText.text = getString(R.string.button_activate)
             }
         }
     }

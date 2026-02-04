@@ -32,6 +32,12 @@
     <color name="status_error">#BA1A1A</color>
     <color name="status_error_container">#FFDAD6</color>
     
+    <!-- New Status Display Colors -->
+    <color name="status_active_green">#4CAF50</color>
+    <color name="status_paused_red">#EF5350</color>
+    <color name="button_pause_red">#EF5350</color>
+    <color name="button_activate_green">#4CAF50</color>
+    
     <!-- Legacy colors for compatibility -->
     <color name="primary">#006A6A</color>
     <color name="primary_dark">#004F4F</color>

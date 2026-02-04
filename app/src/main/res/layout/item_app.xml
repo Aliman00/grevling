@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            android:textColor="@color/md_on_surface"
+            android:textColor="#FFFFFF"
             android:ellipsize="end"
             android:maxLines="1" />
 
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:textSize="12sp"
-            android:textColor="@color/md_on_surface_variant"
+            android:textColor="#80FFFFFF"
             android:ellipsize="end"
             android:maxLines="1" />
 

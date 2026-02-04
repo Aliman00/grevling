@@ -2,8 +2,23 @@
 <resources>
     <string name="app_name">Grevling</string>
     <string name="app_header_title">Grevling Appen</string>
+    <string name="app_subtitle">SMS &amp; Anrops-varsler</string>
 
-    <!-- Home Fragment -->
+    <!-- Home Fragment - Status Display -->
+    <string name="status_display_active">Active</string>
+    <string name="status_display_paused">Paused</string>
+    <string name="status_display_warning">⚠️</string>
+    <string name="forwarding_to_placeholder">Forwarding to: ikke konfigurert</string>
+    <string name="forwarding_to_format">Forwarding to: %s</string>
+    <string name="stats_forwarded_placeholder">0 videresendt i dag</string>
+    <string name="stats_forwarded_format">%d videresendt i dag</string>
+    <string name="stats_last_placeholder">Sist: aldri</string>
+    <string name="stats_last_format">Sist: %s</string>
+    <string name="button_pause">PAUSE VIDERESENDING</string>
+    <string name="button_activate">AKTIVER VIDERESENDING</string>
+    <string name="auto_reply_description">Send automatisk svar-SMS</string>
+
+    <!-- Home Fragment (legacy) -->
     <string name="status_waiting">Status: Avventer innstillinger…</string>
     <string name="status_needs_notification">⚠️ Trenger notifikasjonstilgang</string>
     <string name="status_missing_config">⚙️ Mangler konfigurering</string>
@@ -25,7 +40,9 @@
     <string name="default_call_message">Hei, jeg kan ikke svare telefonen nå. Send SMS eller email hvis viktig.</string>
 
     <!-- Settings Fragment -->
-    <string name="settings_header">Konto-innstillinger</string>
+    <string name="settings_header">Innstillinger</string>
+    <string name="settings_subtitle">Konfigurer email og tillatelser</string>
+    <string name="email_settings_header">Email-konfigurasjon</string>
     <string name="recipient_email_label">Mottaker email (hvor varsler sendes):</string>
     <string name="email_hint">din@email.no</string>
     <string name="gmail_address_label">Gmail-adresse (sender):</string>
