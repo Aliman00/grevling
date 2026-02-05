@@ -12,32 +12,54 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- App Header -->
+        <!-- Modern App Header - Centered with rounded corners -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="#F5F5F5"
-            android:padding="12dp"
-            android:layout_marginHorizontal="-16dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:background="@drawable/header_background_gradient"
+            android:paddingVertical="32dp"
+            android:paddingHorizontal="24dp"
             android:layout_marginTop="-16dp"
             android:layout_marginBottom="20dp">
 
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@mipmap/ic_launcher"
-                android:contentDescription="@string/app_name" />
+            <!-- Circular Icon Container -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                app:cardCornerRadius="40dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/md_surface">
 
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:src="@mipmap/ic_launcher"
+                    android:contentDescription="@string/app_name" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Title -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginTop="16dp"
                 android:text="@string/app_header_title"
-                android:textSize="24sp"
-                android:textColor="@color/md_on_surface"
+                android:textSize="28sp"
+                android:textColor="@color/md_on_primary"
                 android:textStyle="bold" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/home_screen_subtitle"
+                android:textSize="14sp"
+                android:textColor="@color/md_on_primary"
+                android:alpha="0.8" />
 
         </LinearLayout>
 
@@ -49,7 +71,9 @@
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            app:strokeColor="@color/md_outline_variant"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="@color/md_surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -57,72 +81,78 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Status"
-                    android:textSize="12sp"
-                    android:textColor="@color/md_on_surface_variant"
-                    android:textAllCaps="true"
-                    android:letterSpacing="0.1" />
-
-                <TextView
-                    android:id="@+id/statusText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@string/status_waiting"
-                    android:textSize="20sp"
-                    android:textColor="@color/md_on_surface"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Notifications Toggle Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeColor="@color/md_outline_variant"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="16dp">
-
+                <!-- Top row: Circle and Info -->
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/toggle_sms_calls"
-                        android:textSize="16sp"
-                        android:textColor="@color/md_on_surface" />
+                    <!-- Status Circle -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/statusCircle"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        app:cardCornerRadius="40dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="3dp"
+                        app:strokeColor="@color/status_paused_color"
+                        app:cardBackgroundColor="@android:color/transparent">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/statusCircleText"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="@string/status_circle_paused"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/status_paused_color" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Status Info -->
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Videresend SMS og tapte anrop til email"
-                        android:textSize="14sp"
-                        android:textColor="@color/md_on_surface_variant" />
+                        android:layout_weight="1"
+                        android:layout_marginStart="16dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/statusLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/status_label_forwards_to"
+                            android:textSize="14sp"
+                            android:textColor="@color/md_on_surface_variant" />
+
+                        <TextView
+                            android:id="@+id/statusText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/status_no_email"
+                            android:textSize="16sp"
+                            android:textColor="@color/md_on_surface"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <com.google.android.material.materialswitch.MaterialSwitch
-                    android:id="@+id/toggleSwitch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <!-- Toggle Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/toggleButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/toggle_button_activate"
+                    android:textStyle="bold"
+                    app:icon="@drawable/ic_play"
+                    app:iconGravity="textStart"
+                    app:cornerRadius="24dp"
+                    app:backgroundTint="@color/status_active_color" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>

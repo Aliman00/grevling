@@ -1,6 +1,7 @@
 package com.smsforwarder
 
 import android.content.SharedPreferences
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,8 +16,11 @@ import com.google.android.material.textfield.TextInputEditText
 class HomeFragment : BaseFragment() {
 
     private lateinit var statusCard: MaterialCardView
+    private lateinit var statusCircle: MaterialCardView
+    private lateinit var statusCircleText: TextView
+    private lateinit var statusLabel: TextView
     private lateinit var statusText: TextView
-    private lateinit var toggleSwitch: MaterialSwitch
+    private lateinit var toggleButton: MaterialButton
     private lateinit var autoReplySwitch: MaterialSwitch
     private lateinit var autoReplyOptionsContainer: LinearLayout
     private lateinit var autoReplyLockButton: MaterialButton
@@ -44,8 +48,11 @@ class HomeFragment : BaseFragment() {
 
         // Bind views
         statusCard = view.findViewById(R.id.statusCard)
+        statusCircle = view.findViewById(R.id.statusCircle)
+        statusCircleText = view.findViewById(R.id.statusCircleText)
+        statusLabel = view.findViewById(R.id.statusLabel)
         statusText = view.findViewById(R.id.statusText)
-        toggleSwitch = view.findViewById(R.id.toggleSwitch)
+        toggleButton = view.findViewById(R.id.toggleButton)
         autoReplySwitch = view.findViewById(R.id.autoReplySwitch)
         autoReplyOptionsContainer = view.findViewById(R.id.autoReplyOptionsContainer)
         autoReplyLockButton = view.findViewById(R.id.autoReplyLockButton)
@@ -60,8 +67,9 @@ class HomeFragment : BaseFragment() {
         callSavedText = view.findViewById(R.id.callSavedText)
 
         // Setup listeners
-        toggleSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("enabled", isChecked).apply()
+        toggleButton.setOnClickListener {
+            val currentEnabled = prefs.getBoolean("enabled", false)
+            prefs.edit().putBoolean("enabled", !currentEnabled).apply()
             updateStatus()
             // Oppdater widget når status endres i appen (context-sikker)
             context?.let { ForwardingWidget.updateAllWidgets(it) }
@@ -150,7 +158,6 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun loadSettings() {
-        toggleSwitch.isChecked = prefs.getBoolean("enabled", false)
         autoReplySwitch.isChecked = prefs.getBoolean("auto_reply_enabled", false)
         sameMessageSwitch.isChecked = prefs.getBoolean("use_same_message", true)
 
@@ -173,24 +180,49 @@ class HomeFragment : BaseFragment() {
         val hasGmailAddress = prefs.getString("gmail_address", "")?.isNotEmpty() == true
         val hasGmailPassword = prefs.getString("gmail_password", "")?.isNotEmpty() == true
         val hasRecipientEmail = prefs.getString("email", "")?.isNotEmpty() == true
+        val recipientEmail = prefs.getString("email", "") ?: ""
         val hasNotificationAccess = NotificationHelper.isNotificationServiceEnabled(requireContext())
 
-        when {
-            !hasNotificationAccess -> {
-                statusText.text = getString(R.string.status_needs_notification)
-                statusCard.setCardBackgroundColor(getColor(R.color.status_warning_container))
-            }
-            !hasGmailAddress || !hasGmailPassword || !hasRecipientEmail -> {
-                statusText.text = getString(R.string.status_missing_config)
-                statusCard.setCardBackgroundColor(getColor(R.color.status_warning_container))
-            }
-            enabled -> {
-                statusText.text = getString(R.string.status_active)
-                statusCard.setCardBackgroundColor(getColor(R.color.status_success_container))
-            }
-            else -> {
-                statusText.text = getString(R.string.status_paused)
-                statusCard.setCardBackgroundColor(getColor(R.color.md_surface_variant))
+        // Update circle and text based on enabled state
+        val activeColor = getColor(R.color.status_active_color)
+        val pausedColor = getColor(R.color.status_paused_color)
+        
+        if (enabled && hasNotificationAccess && hasGmailAddress && hasGmailPassword && hasRecipientEmail) {
+            // Active state - show pause button (red)
+            statusCircle.setStrokeColor(ColorStateList.valueOf(activeColor))
+            statusCircleText.setTextColor(activeColor)
+            statusCircleText.text = getString(R.string.status_circle_active)
+            statusLabel.text = getString(R.string.status_label_forwards_to)
+            statusText.text = recipientEmail
+            
+            // Button: Red with pause icon
+            toggleButton.text = getString(R.string.toggle_button_pause)
+            toggleButton.setIconResource(R.drawable.ic_pause)
+            toggleButton.setBackgroundColor(pausedColor)
+        } else {
+            // Paused/inactive state - show activate button (green)
+            statusCircle.setStrokeColor(ColorStateList.valueOf(pausedColor))
+            statusCircleText.setTextColor(pausedColor)
+            statusCircleText.text = getString(R.string.status_circle_paused)
+            
+            // Button: Green with play icon
+            toggleButton.text = getString(R.string.toggle_button_activate)
+            toggleButton.setIconResource(R.drawable.ic_play)
+            toggleButton.setBackgroundColor(activeColor)
+            
+            when {
+                !hasNotificationAccess -> {
+                    statusLabel.text = getString(R.string.status_needs_notification)
+                    statusText.text = ""
+                }
+                !hasGmailAddress || !hasGmailPassword || !hasRecipientEmail -> {
+                    statusLabel.text = getString(R.string.status_missing_config)
+                    statusText.text = ""
+                }
+                else -> {
+                    statusLabel.text = getString(R.string.status_label_forwards_to)
+                    statusText.text = if (recipientEmail.isNotEmpty()) recipientEmail else getString(R.string.status_no_email)
+                }
             }
         }
     }

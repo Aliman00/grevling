@@ -26,25 +26,19 @@
     
     <!-- Status Colors -->
     <color name="status_success">#1B873B</color>
-    <color name="status_success_container">#A8F5AD</color>
     <color name="status_warning">#7D5800</color>
-    <color name="status_warning_container">#FFDEA8</color>
     <color name="status_error">#BA1A1A</color>
     <color name="status_error_container">#FFDAD6</color>
     
-    <!-- Legacy colors for compatibility -->
-    <color name="primary">#006A6A</color>
-    <color name="primary_dark">#004F4F</color>
-    <color name="accent">#006A6A</color>
-    <color name="background">#F5FAFA</color>
+    <!-- Status Circle Colors -->
+    <color name="status_active_color">#4CAF50</color>
+    <color name="status_paused_color">#EF5350</color>
+    
+    <!-- Navigation -->
     <color name="nav_item_selected">#006A6A</color>
     <color name="nav_item_default">#6F7978</color>
 
-    <!-- UI Colors (legacy) -->
-    <color name="text_secondary">#3F4948</color>
+    <!-- Text Colors (used in SettingsFragment) -->
     <color name="text_success">#1B873B</color>
     <color name="text_warning">#7D5800</color>
-    <color name="text_disabled">#6F7978</color>
-    <color name="background_locked">#DAE5E4</color>
-    <color name="separator">#BEC9C8</color>
 </resources>

@@ -4,12 +4,15 @@
     <string name="app_header_title">Grevling Appen</string>
 
     <!-- Home Fragment -->
-    <string name="status_waiting">Status: Avventer innstillinger…</string>
+    <string name="home_screen_subtitle">SMS &amp; Anrops-varsler</string>
+    <string name="status_circle_active">Aktivert</string>
+    <string name="status_circle_paused">Pauset</string>
+    <string name="status_label_forwards_to">Varslinger blir sendt til:</string>
+    <string name="status_no_email">Ikke konfigurert</string>
+    <string name="toggle_button_activate">AKTIVER VIDERESENDING</string>
+    <string name="toggle_button_pause">PAUSE VIDERESENDING</string>
     <string name="status_needs_notification">⚠️ Trenger notifikasjonstilgang</string>
     <string name="status_missing_config">⚙️ Mangler konfigurering</string>
-    <string name="status_active">✅ Aktiv og klar</string>
-    <string name="status_paused">⏸️ Pauset</string>
-    <string name="toggle_sms_calls">SMS &amp; Anrops-varsler</string>
     <string name="toggle_auto_reply">Auto-svar</string>
     <string name="lock_auto_reply">🔒 Lås opp auto-svar</string>
     <string name="unlock_auto_reply">🔓 Lås auto-svar</string>
@@ -25,6 +28,8 @@
     <string name="default_call_message">Hei, jeg kan ikke svare telefonen nå. Send SMS eller email hvis viktig.</string>
 
     <!-- Settings Fragment -->
+    <string name="settings_screen_title">Innstillinger</string>
+    <string name="settings_screen_subtitle">Konfigurer email og tillatelser</string>
     <string name="settings_header">Konto-innstillinger</string>
     <string name="recipient_email_label">Mottaker email (hvor varsler sendes):</string>
     <string name="email_hint">din@email.no</string>
