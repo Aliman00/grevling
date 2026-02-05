@@ -261,10 +261,8 @@ class SettingsFragment : BaseFragment() {
 
             2️⃣ Opprett App Password
                • Gå til myaccount.google.com/apppasswords
-               • Velg "Mail" som app
-               • Velg "Other" som enhet
-               • Skriv "SMS Forwarder"
-               • Klikk "Generate"
+               • Skriv inn Appnavn (f.eks. "Grevling Appen")
+               • Klikk "Opprett"
 
             3️⃣ Kopier passordet
                • Google viser et 16-tegn passord
