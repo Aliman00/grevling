@@ -24,10 +24,11 @@ class SmsReceiver : BroadcastReceiver() {
                 return
             }
 
-            // Kombiner alle meldingsdeler til én komplett melding
+            // Kombiner alle meldingsdeler til én komplett melding (maks 5000 tegn)
             val fullMessage = messages
                 .mapNotNull { it.messageBody }
                 .joinToString("")
+                .take(5000)
 
             if (fullMessage.isEmpty()) {
                 Logger.w(TAG, "SMS mottatt med tom melding")

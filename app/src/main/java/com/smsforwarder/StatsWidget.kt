@@ -2,8 +2,6 @@ package com.smsforwarder
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
@@ -12,7 +10,10 @@ import android.widget.RemoteViews
  * Stats Widget (2x2) - Viser detaljert statistikk og toggle-knapp.
  * Viser antall SMS, anrop, siste videresending og pause/resume knapp.
  */
-class StatsWidget : AppWidgetProvider() {
+class StatsWidget : BaseWidget() {
+
+    override val toggleAction = ACTION_TOGGLE
+    override val tag = TAG
 
     companion object {
         const val ACTION_TOGGLE = "com.smsforwarder.ACTION_TOGGLE_STATS"
@@ -27,25 +28,7 @@ class StatsWidget : AppWidgetProvider() {
         }
     }
 
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray
-    ) {
-        for (appWidgetId in appWidgetIds) {
-            updateWidget(context, appWidgetManager, appWidgetId)
-        }
-    }
-
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-
-        if (intent.action == ACTION_TOGGLE) {
-            WidgetHelper.toggleForwarding(context, TAG)
-        }
-    }
-
-    private fun updateWidget(
+    override fun updateWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int

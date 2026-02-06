@@ -77,15 +77,15 @@ class SettingsFragment : BaseFragment() {
 
         // Setup listeners
         emailEditText.addTextChangedListener(createAutoSaveWatcher(
-            onSave = { email -> prefs.edit().putString("email", email).apply() }
+            onSave = { email -> prefs.edit().putString(PreferencesManager.KEY_RECIPIENT_EMAIL, email).apply() }
         ))
 
         gmailAddressEditText.addTextChangedListener(createAutoSaveWatcher(
-            onSave = { address -> prefs.edit().putString("gmail_address", address).apply() }
+            onSave = { address -> prefs.edit().putString(PreferencesManager.KEY_GMAIL_ADDRESS, address).apply() }
         ))
 
         gmailPasswordEditText.addTextChangedListener(createAutoSaveWatcher(
-            onSave = { password -> prefs.edit().putString("gmail_password", password).apply() }
+            onSave = { password -> prefs.edit().putString(PreferencesManager.KEY_GMAIL_PASSWORD, password).apply() }
         ))
 
         appPasswordHelpButton.setOnClickListener { showAppPasswordGuide() }
@@ -111,9 +111,9 @@ class SettingsFragment : BaseFragment() {
     }
 
     private fun loadSettings() {
-        emailEditText.setText(prefs.getString("email", ""))
-        gmailAddressEditText.setText(prefs.getString("gmail_address", ""))
-        gmailPasswordEditText.setText(prefs.getString("gmail_password", ""))
+        emailEditText.setText(prefs.getString(PreferencesManager.KEY_RECIPIENT_EMAIL, ""))
+        gmailAddressEditText.setText(prefs.getString(PreferencesManager.KEY_GMAIL_ADDRESS, ""))
+        gmailPasswordEditText.setText(prefs.getString(PreferencesManager.KEY_GMAIL_PASSWORD, ""))
     }
 
     private fun sendTestEmail() {
@@ -166,11 +166,8 @@ class SettingsFragment : BaseFragment() {
         testEmailButton.isEnabled = false
         testEmailButton.text = getString(R.string.test_email_sending)
 
-        EmailSender.testEmailConfig(
-            gmailAddress,
-            gmailPassword,
-            recipientEmail
-        ) { success, message ->
+        // Credentials leses direkte fra EncryptedSharedPreferences av EmailSender
+        EmailSender.testEmailConfig(requireContext()) { success, message ->
             // Bruk activity?.runOnUiThread for null-safety
             activity?.runOnUiThread {
                 // Sjekk at fragment fortsatt er attached og view er tilgjengelig
@@ -246,7 +243,7 @@ class SettingsFragment : BaseFragment() {
 
     private fun updateHelpButtonsVisibility() {
         // Skjul "Hvordan få Gmail App Password?" hvis passord allerede er satt
-        val hasPassword = prefs.getString("gmail_password", "")?.length == 16
+        val hasPassword = prefs.getString(PreferencesManager.KEY_GMAIL_PASSWORD, "")?.length == 16
         appPasswordHelpButton.visibility = if (hasPassword) View.GONE else View.VISIBLE
     }
 

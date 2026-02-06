@@ -94,7 +94,7 @@ class AppSelectionFragment : BaseFragment() {
 
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val pm = requireContext().packageManager
-            val selectedApps = prefs.getStringSet("monitored_apps", emptySet()) ?: emptySet()
+            val selectedApps = prefs.getStringSet(PreferencesManager.KEY_MONITORED_APPS, emptySet()) ?: emptySet()
 
             // Bruk moderne API for Android 13+ (TIRAMISU)
             val installedApps = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -132,7 +132,7 @@ class AppSelectionFragment : BaseFragment() {
     }
 
     private fun onAppToggled(app: AppInfo, isSelected: Boolean) {
-        val selectedApps = prefs.getStringSet("monitored_apps", emptySet())?.toMutableSet() ?: mutableSetOf()
+        val selectedApps = prefs.getStringSet(PreferencesManager.KEY_MONITORED_APPS, emptySet())?.toMutableSet() ?: mutableSetOf()
         
         if (isSelected) {
             selectedApps.add(app.packageName)
@@ -140,14 +140,14 @@ class AppSelectionFragment : BaseFragment() {
             selectedApps.remove(app.packageName)
         }
         
-        prefs.edit().putStringSet("monitored_apps", selectedApps).apply()
+        prefs.edit().putStringSet(PreferencesManager.KEY_MONITORED_APPS, selectedApps).apply()
         updateSelectedCount()
         
         Logger.d("AppSelection", "App ${app.appName} ${if (isSelected) "lagt til" else "fjernet"}")
     }
 
     private fun updateSelectedCount() {
-        val count = prefs.getStringSet("monitored_apps", emptySet())?.size ?: 0
+        val count = prefs.getStringSet(PreferencesManager.KEY_MONITORED_APPS, emptySet())?.size ?: 0
         selectedCountText.text = getString(R.string.selected_apps_count, count)
     }
 }

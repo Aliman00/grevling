@@ -10,7 +10,20 @@ object PreferencesManager {
 
     private const val TAG = "PreferencesManager"
     private const val PREFS_NAME = "secure_prefs"
-    private const val FALLBACK_PREFS_NAME = "fallback_prefs"
+
+    // Sentraliserte preference-nøkler — bruk disse overalt for å unngå typos
+    const val KEY_ENABLED = "enabled"
+    const val KEY_GMAIL_ADDRESS = "gmail_address"
+    const val KEY_GMAIL_PASSWORD = "gmail_password"
+    const val KEY_RECIPIENT_EMAIL = "email"
+    const val KEY_AUTO_REPLY_ENABLED = "auto_reply_enabled"
+    const val KEY_AUTO_REPLY_LOCKED = "auto_reply_locked"
+    const val KEY_USE_SAME_MESSAGE = "use_same_message"
+    const val KEY_UNIFIED_REPLY_MESSAGE = "unified_reply_message"
+    const val KEY_SMS_REPLY_MESSAGE = "sms_reply_message"
+    const val KEY_CALL_REPLY_MESSAGE = "call_reply_message"
+    const val KEY_MONITORED_APPS = "monitored_apps"
+    const val KEY_WIDGET_TOKEN = "widget_toggle_token"
 
     fun getEncryptedPreferences(context: Context): SharedPreferences {
         return try {
@@ -26,10 +39,10 @@ object PreferencesManager {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            // Logging uten å bruke Logger for å unngå sirkulær avhengighet
-            Log.e(TAG, "Krypteringsfeil, bruker fallback SharedPreferences", e)
-            // Fallback til vanlige prefs - mindre sikkert, men appen fungerer
-            context.getSharedPreferences(FALLBACK_PREFS_NAME, Context.MODE_PRIVATE)
+            Log.e(TAG, "Kritisk: Kunne ikke opprette kryptert lagring", e)
+            throw SecurityException(
+                "Kunne ikke opprette sikker lagring. Gmail-legitimasjon kan ikke lagres trygt.", e
+            )
         }
     }
 }

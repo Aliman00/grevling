@@ -1,16 +1,17 @@
 package com.smsforwarder
 
 import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.content.Intent
 import android.widget.RemoteViews
 
 /**
  * Mini-widget (1x1) - Bare et ikon som fungerer som på/av-knapp.
  * Enkel og kompakt toggle for hjemskjermen.
  */
-class ForwardingWidgetMini : AppWidgetProvider() {
+class ForwardingWidgetMini : BaseWidget() {
+
+    override val toggleAction = ACTION_TOGGLE
+    override val tag = TAG
 
     companion object {
         const val ACTION_TOGGLE = "com.smsforwarder.ACTION_TOGGLE_MINI"
@@ -25,29 +26,7 @@ class ForwardingWidgetMini : AppWidgetProvider() {
         }
     }
 
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray
-    ) {
-        for (appWidgetId in appWidgetIds) {
-            updateWidget(context, appWidgetManager, appWidgetId)
-        }
-    }
-
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-
-        if (intent.action == ACTION_TOGGLE) {
-            toggleForwarding(context)
-        }
-    }
-
-    private fun toggleForwarding(context: Context) {
-        WidgetHelper.toggleForwarding(context, TAG)
-    }
-
-    private fun updateWidget(
+    override fun updateWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int

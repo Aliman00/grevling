@@ -44,7 +44,7 @@ class HomeFragment : BaseFragment() {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
         
         prefs = getEncryptedPreferences()
-        isAutoReplyLocked = prefs.getBoolean("auto_reply_locked", true)
+        isAutoReplyLocked = prefs.getBoolean(PreferencesManager.KEY_AUTO_REPLY_LOCKED, true)
 
         // Bind views
         statusCard = view.findViewById(R.id.statusCard)
@@ -68,22 +68,22 @@ class HomeFragment : BaseFragment() {
 
         // Setup listeners
         toggleButton.setOnClickListener {
-            val currentEnabled = prefs.getBoolean("enabled", false)
-            prefs.edit().putBoolean("enabled", !currentEnabled).apply()
+            val currentEnabled = prefs.getBoolean(PreferencesManager.KEY_ENABLED, false)
+            prefs.edit().putBoolean(PreferencesManager.KEY_ENABLED, !currentEnabled).apply()
             updateStatus()
             // Oppdater widget når status endres i appen (context-sikker)
             context?.let { ForwardingWidget.updateAllWidgets(it) }
         }
 
         autoReplySwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("auto_reply_enabled", isChecked).apply()
+            prefs.edit().putBoolean(PreferencesManager.KEY_AUTO_REPLY_ENABLED, isChecked).apply()
             updateAutoReplyVisibility()
         }
 
         autoReplyLockButton.setOnClickListener { toggleAutoReplyLock() }
 
         sameMessageSwitch.setOnCheckedChangeListener { _, isChecked ->
-            prefs.edit().putBoolean("use_same_message", isChecked).apply()
+            prefs.edit().putBoolean(PreferencesManager.KEY_USE_SAME_MESSAGE, isChecked).apply()
             updateAutoReplyVisibility()
         }
 
@@ -91,21 +91,21 @@ class HomeFragment : BaseFragment() {
         unifiedMessageEdit.addTextChangedListener(createAutoSaveWatcher(
             savedIndicator = unifiedSavedText,
             shouldSave = { !isAutoReplyLocked },
-            onSave = { msg -> prefs.edit().putString("unified_reply_message", msg).apply() },
+            onSave = { msg -> prefs.edit().putString(PreferencesManager.KEY_UNIFIED_REPLY_MESSAGE, msg).apply() },
             onAfterSave = { updateStatus() }
         ))
 
         smsReplyEdit.addTextChangedListener(createAutoSaveWatcher(
             savedIndicator = smsSavedText,
             shouldSave = { !isAutoReplyLocked },
-            onSave = { msg -> prefs.edit().putString("sms_reply_message", msg).apply() },
+            onSave = { msg -> prefs.edit().putString(PreferencesManager.KEY_SMS_REPLY_MESSAGE, msg).apply() },
             onAfterSave = { updateStatus() }
         ))
 
         callReplyEdit.addTextChangedListener(createAutoSaveWatcher(
             savedIndicator = callSavedText,
             shouldSave = { !isAutoReplyLocked },
-            onSave = { msg -> prefs.edit().putString("call_reply_message", msg).apply() },
+            onSave = { msg -> prefs.edit().putString(PreferencesManager.KEY_CALL_REPLY_MESSAGE, msg).apply() },
             onAfterSave = { updateStatus() }
         ))
 
@@ -121,8 +121,8 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun updateAutoReplyVisibility() {
-        val autoReplyEnabled = prefs.getBoolean("auto_reply_enabled", false)
-        val useSameMessage = prefs.getBoolean("use_same_message", true)
+        val autoReplyEnabled = prefs.getBoolean(PreferencesManager.KEY_AUTO_REPLY_ENABLED, false)
+        val useSameMessage = prefs.getBoolean(PreferencesManager.KEY_USE_SAME_MESSAGE, true)
 
         autoReplyOptionsContainer.visibility = if (autoReplyEnabled) View.VISIBLE else View.GONE
 
@@ -139,7 +139,7 @@ class HomeFragment : BaseFragment() {
 
     private fun toggleAutoReplyLock() {
         isAutoReplyLocked = !isAutoReplyLocked
-        prefs.edit().putBoolean("auto_reply_locked", isAutoReplyLocked).apply()
+        prefs.edit().putBoolean(PreferencesManager.KEY_AUTO_REPLY_LOCKED, isAutoReplyLocked).apply()
         updateAutoReplyLockState()
     }
 
@@ -158,29 +158,29 @@ class HomeFragment : BaseFragment() {
     }
 
     private fun loadSettings() {
-        autoReplySwitch.isChecked = prefs.getBoolean("auto_reply_enabled", false)
-        sameMessageSwitch.isChecked = prefs.getBoolean("use_same_message", true)
+        autoReplySwitch.isChecked = prefs.getBoolean(PreferencesManager.KEY_AUTO_REPLY_ENABLED, false)
+        sameMessageSwitch.isChecked = prefs.getBoolean(PreferencesManager.KEY_USE_SAME_MESSAGE, true)
 
         // Last meldinger - bruk default kun for visning, ikke skriv til prefs før bruker endrer
-        val unifiedMsg = prefs.getString("unified_reply_message", null)
+        val unifiedMsg = prefs.getString(PreferencesManager.KEY_UNIFIED_REPLY_MESSAGE, null)
             ?: getString(R.string.default_unified_message)
         unifiedMessageEdit.setText(unifiedMsg)
 
-        val smsMsg = prefs.getString("sms_reply_message", null)
+        val smsMsg = prefs.getString(PreferencesManager.KEY_SMS_REPLY_MESSAGE, null)
             ?: getString(R.string.default_sms_message)
         smsReplyEdit.setText(smsMsg)
 
-        val callMsg = prefs.getString("call_reply_message", null)
+        val callMsg = prefs.getString(PreferencesManager.KEY_CALL_REPLY_MESSAGE, null)
             ?: getString(R.string.default_call_message)
         callReplyEdit.setText(callMsg)
     }
 
     private fun updateStatus() {
-        val enabled = prefs.getBoolean("enabled", false)
-        val hasGmailAddress = prefs.getString("gmail_address", "")?.isNotEmpty() == true
-        val hasGmailPassword = prefs.getString("gmail_password", "")?.isNotEmpty() == true
-        val hasRecipientEmail = prefs.getString("email", "")?.isNotEmpty() == true
-        val recipientEmail = prefs.getString("email", "") ?: ""
+        val enabled = prefs.getBoolean(PreferencesManager.KEY_ENABLED, false)
+        val hasGmailAddress = prefs.getString(PreferencesManager.KEY_GMAIL_ADDRESS, "")?.isNotEmpty() == true
+        val hasGmailPassword = prefs.getString(PreferencesManager.KEY_GMAIL_PASSWORD, "")?.isNotEmpty() == true
+        val hasRecipientEmail = prefs.getString(PreferencesManager.KEY_RECIPIENT_EMAIL, "")?.isNotEmpty() == true
+        val recipientEmail = prefs.getString(PreferencesManager.KEY_RECIPIENT_EMAIL, "") ?: ""
         val hasNotificationAccess = NotificationHelper.isNotificationServiceEnabled(requireContext())
 
         // Update circle and text based on enabled state

@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.checkbox.MaterialCheckBox
 
@@ -14,6 +15,8 @@ class AppListAdapter(
 ) : RecyclerView.Adapter<AppListAdapter.AppViewHolder>() {
 
     private var filteredApps: List<AppInfo> = apps
+    private var currentQuery: String = ""
+    private var showOnlySelected: Boolean = false
 
     class AppViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val icon: ImageView = view.findViewById(R.id.app_icon)
@@ -53,29 +56,60 @@ class AppListAdapter(
     override fun getItemCount() = filteredApps.size
 
     fun filter(query: String) {
-        filteredApps = if (query.isEmpty()) {
-            apps
-        } else {
-            apps.filter {
-                it.appName.contains(query, ignoreCase = true) ||
-                it.packageName.contains(query, ignoreCase = true)
-            }
-        }
-        notifyDataSetChanged()
+        currentQuery = query
+        applyFilter()
     }
 
     fun updateApps(newApps: List<AppInfo>) {
         apps = newApps
-        filteredApps = newApps
-        notifyDataSetChanged()
+        applyFilter()
     }
 
     fun showOnlySelected(onlySelected: Boolean) {
-        filteredApps = if (onlySelected) {
-            apps.filter { it.isSelected }
-        } else {
-            apps
+        showOnlySelected = onlySelected
+        applyFilter()
+    }
+
+    /**
+     * Beregner filtrert liste og bruker DiffUtil for effektiv oppdatering.
+     */
+    private fun applyFilter() {
+        var result = apps
+
+        // Filtrer på søk
+        if (currentQuery.isNotEmpty()) {
+            result = result.filter {
+                it.appName.contains(currentQuery, ignoreCase = true) ||
+                it.packageName.contains(currentQuery, ignoreCase = true)
+            }
         }
-        notifyDataSetChanged()
+
+        // Filtrer på kun valgte
+        if (showOnlySelected) {
+            result = result.filter { it.isSelected }
+        }
+
+        val oldList = filteredApps
+        val newList = result
+
+        val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = oldList.size
+            override fun getNewListSize() = newList.size
+
+            override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean {
+                return oldList[oldPos].packageName == newList[newPos].packageName
+            }
+
+            override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+                val old = oldList[oldPos]
+                val new = newList[newPos]
+                return old.packageName == new.packageName &&
+                       old.appName == new.appName &&
+                       old.isSelected == new.isSelected
+            }
+        })
+
+        filteredApps = newList
+        diffResult.dispatchUpdatesTo(this)
     }
 }

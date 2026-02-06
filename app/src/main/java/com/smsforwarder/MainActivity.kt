@@ -13,6 +13,11 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNav: BottomNavigationView
 
+    // Cache fragments for å unngå gjenskaping ved tab-bytte
+    private val homeFragment by lazy { HomeFragment() }
+    private val appSelectionFragment by lazy { AppSelectionFragment() }
+    private val settingsFragment by lazy { SettingsFragment() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -22,15 +27,15 @@ class MainActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    loadFragment(HomeFragment())
+                    loadFragment(homeFragment)
                     true
                 }
                 R.id.nav_apps -> {
-                    loadFragment(AppSelectionFragment())
+                    loadFragment(appSelectionFragment)
                     true
                 }
                 R.id.nav_settings -> {
-                    loadFragment(SettingsFragment())
+                    loadFragment(settingsFragment)
                     true
                 }
                 else -> false
@@ -39,7 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         // Load home fragment by default
         if (savedInstanceState == null) {
-            loadFragment(HomeFragment())
+            loadFragment(homeFragment)
         }
 
         requestPermissions()

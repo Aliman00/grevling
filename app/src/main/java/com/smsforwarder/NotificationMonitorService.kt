@@ -54,19 +54,19 @@ class NotificationMonitorService : NotificationListenerService() {
 
     private fun handleAppNotification(sbn: StatusBarNotification) {
         val prefs = PreferencesManager.getEncryptedPreferences(this)
-        val enabled = prefs.getBoolean("enabled", false)
+        val enabled = prefs.getBoolean(PreferencesManager.KEY_ENABLED, false)
         
         if (!enabled) return
 
-        val monitoredApps = prefs.getStringSet("monitored_apps", emptySet()) ?: emptySet()
+        val monitoredApps = prefs.getStringSet(PreferencesManager.KEY_MONITORED_APPS, emptySet()) ?: emptySet()
         
         if (!monitoredApps.contains(sbn.packageName)) return
 
         val notification = sbn.notification
         val extras = notification.extras ?: return // Sikker null-håndtering
         
-        val title = extras.getString("android.title", "") ?: ""
-        val text = extras.getCharSequence("android.text", "")?.toString() ?: ""
+        val title = (extras.getString("android.title", "") ?: "").take(500)
+        val text = (extras.getCharSequence("android.text", "")?.toString() ?: "").take(5000)
         
         // Unngå tomme varsler
         if (title.isEmpty() && text.isEmpty()) return

@@ -1,6 +1,7 @@
 package com.smsforwarder
 
 import android.content.Context
+import android.util.Patterns
 import java.util.Properties
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadPoolExecutor
@@ -188,13 +189,20 @@ object EmailSender {
 
     fun sendEmail(context: Context, subject: String, body: String) {
         val prefs = getEncryptedPreferences(context)
-        val enabled = prefs.getBoolean("enabled", false)
-        val gmailAddress = prefs.getString("gmail_address", "") ?: ""
-        val gmailPassword = prefs.getString("gmail_password", "") ?: ""
-        val toEmail = prefs.getString("email", "") ?: ""
+        val enabled = prefs.getBoolean(PreferencesManager.KEY_ENABLED, false)
+        val gmailAddress = prefs.getString(PreferencesManager.KEY_GMAIL_ADDRESS, "") ?: ""
+        val gmailPassword = prefs.getString(PreferencesManager.KEY_GMAIL_PASSWORD, "") ?: ""
+        val toEmail = prefs.getString(PreferencesManager.KEY_RECIPIENT_EMAIL, "") ?: ""
 
         if (!enabled || gmailAddress.isEmpty() || gmailPassword.isEmpty() || toEmail.isEmpty()) {
             Logger.d(TAG, "Email ikke konfigurert eller deaktivert")
+            return
+        }
+
+        // Valider e-postformat før SMTP-tilkobling
+        if (!Patterns.EMAIL_ADDRESS.matcher(gmailAddress).matches() ||
+            !Patterns.EMAIL_ADDRESS.matcher(toEmail).matches()) {
+            Logger.w(TAG, "Ugyldig e-postformat, avbryter sending")
             return
         }
 
@@ -226,14 +234,23 @@ object EmailSender {
     }
 
     /**
-     * Tester email-konfigurasjonen ved å sende en test-email
+     * Tester email-konfigurasjonen ved å sende en test-email.
+     * Leser credentials direkte fra EncryptedSharedPreferences.
      */
     fun testEmailConfig(
-        gmailAddress: String,
-        gmailPassword: String,
-        recipientEmail: String,
+        context: Context,
         onResult: (Boolean, String) -> Unit
     ) {
+        val prefs = getEncryptedPreferences(context)
+        val gmailAddress = prefs.getString(PreferencesManager.KEY_GMAIL_ADDRESS, "") ?: ""
+        val gmailPassword = prefs.getString(PreferencesManager.KEY_GMAIL_PASSWORD, "") ?: ""
+        val recipientEmail = prefs.getString(PreferencesManager.KEY_RECIPIENT_EMAIL, "") ?: ""
+
+        if (gmailAddress.isEmpty() || gmailPassword.isEmpty() || recipientEmail.isEmpty()) {
+            onResult(false, "❌ Email ikke konfigurert")
+            return
+        }
+
         getExecutor().execute {
             var success = false
             var message: String

@@ -9,18 +9,8 @@ import android.util.Log
  */
 object Logger {
 
-    // Sjekk om vi kjører i debug-modus (bruker appens BuildConfig)
-    private val isDebug: Boolean by lazy {
-        try {
-            // Bruk reflection for å unngå compile-time avhengighet
-            val buildConfigClass = Class.forName("com.smsforwarder.BuildConfig")
-            val debugField = buildConfigClass.getField("DEBUG")
-            debugField.getBoolean(null)
-        } catch (e: Exception) {
-            // Fallback til true hvis BuildConfig ikke er tilgjengelig
-            true
-        }
-    }
+    // BuildConfig.DEBUG er en compile-time constant og overlever R8
+    private val isDebug: Boolean = BuildConfig.DEBUG
 
     fun d(tag: String, message: String) {
         if (isDebug) {
@@ -45,7 +35,12 @@ object Logger {
     }
 
     fun e(tag: String, message: String, throwable: Throwable) {
-        // Errors logges alltid
-        Log.e(tag, message, throwable)
+        if (isDebug) {
+            // Debug: logg med full stacktrace
+            Log.e(tag, message, throwable)
+        } else {
+            // Release: kun meldingen, ingen throwable-detaljer (kan inneholde sensitiv info)
+            Log.e(tag, message)
+        }
     }
 }
