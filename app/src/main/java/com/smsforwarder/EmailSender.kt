@@ -157,6 +157,7 @@ object EmailSender {
             put("mail.smtp.starttls.enable", "true")
             put("mail.smtp.starttls.required", "true")
             put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3")
+            put("mail.smtp.ssl.checkserveridentity", "true")
             put("mail.smtp.connectiontimeout", SMTP_TIMEOUT)
             put("mail.smtp.timeout", SMTP_TIMEOUT)
             put("mail.smtp.writetimeout", SMTP_TIMEOUT)

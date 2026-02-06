@@ -1,7 +1,7 @@
 package com.smsforwarder
 
 import android.content.Context
-import android.provider.Settings
+import androidx.core.app.NotificationManagerCompat
 
 /**
  * Helper for notification-relaterte operasjoner
@@ -9,13 +9,11 @@ import android.provider.Settings
 object NotificationHelper {
 
     /**
-     * Sjekker om NotificationListenerService er aktivert for appen
+     * Sjekker om NotificationListenerService er aktivert for appen.
+     * Bruker NotificationManagerCompat for pålitelig matching (unngår falsk positiv fra substring).
      */
     fun isNotificationServiceEnabled(context: Context): Boolean {
-        val enabledServices = Settings.Secure.getString(
-            context.contentResolver,
-            "enabled_notification_listeners"
-        )
-        return enabledServices?.contains(context.packageName) == true
+        val enabledPackages = NotificationManagerCompat.getEnabledListenerPackages(context)
+        return enabledPackages.contains(context.packageName)
     }
 }

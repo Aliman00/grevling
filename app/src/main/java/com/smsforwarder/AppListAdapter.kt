@@ -41,15 +41,14 @@ class AppListAdapter(
 
         // Klikk på hele raden
         holder.itemView.setOnClickListener {
-            app.isSelected = !app.isSelected
-            holder.checkbox.isChecked = app.isSelected
-            onAppToggled(app, app.isSelected)
+            val toggled = !app.isSelected
+            holder.checkbox.isChecked = toggled
+            onAppToggled(app, toggled)
         }
 
         // Klikk på checkbox
         holder.checkbox.setOnClickListener {
-            app.isSelected = holder.checkbox.isChecked
-            onAppToggled(app, app.isSelected)
+            onAppToggled(app, holder.checkbox.isChecked)
         }
     }
 

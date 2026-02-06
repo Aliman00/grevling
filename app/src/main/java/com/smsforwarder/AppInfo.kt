@@ -6,5 +6,5 @@ data class AppInfo(
     val packageName: String,
     val appName: String,
     val icon: Drawable,
-    var isSelected: Boolean = false
+    val isSelected: Boolean = false
 )

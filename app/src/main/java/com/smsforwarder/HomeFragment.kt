@@ -71,8 +71,12 @@ class HomeFragment : BaseFragment() {
             val currentEnabled = prefs.getBoolean(PreferencesManager.KEY_ENABLED, false)
             prefs.edit().putBoolean(PreferencesManager.KEY_ENABLED, !currentEnabled).apply()
             updateStatus()
-            // Oppdater widget når status endres i appen (context-sikker)
-            context?.let { ForwardingWidget.updateAllWidgets(it) }
+            // Oppdater alle widgets når status endres i appen
+            context?.let { ctx ->
+                WidgetHelper.updateAllWidgetsOfType(ctx, ForwardingWidget::class.java)
+                WidgetHelper.updateAllWidgetsOfType(ctx, ForwardingWidgetMini::class.java)
+                WidgetHelper.updateAllWidgetsOfType(ctx, StatsWidget::class.java)
+            }
         }
 
         autoReplySwitch.setOnCheckedChangeListener { _, isChecked ->

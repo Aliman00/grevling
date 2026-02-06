@@ -2,7 +2,6 @@ package com.smsforwarder
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
@@ -39,7 +38,7 @@ object PreferencesManager {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Kritisk: Kunne ikke opprette kryptert lagring", e)
+            Logger.e(TAG, "Kritisk: Kunne ikke opprette kryptert lagring", e)
             throw SecurityException(
                 "Kunne ikke opprette sikker lagring. Gmail-legitimasjon kan ikke lagres trygt.", e
             )

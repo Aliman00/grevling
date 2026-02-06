@@ -52,11 +52,11 @@ android {
         }
     }
 
-    applicationVariants.all {
-        outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+    applicationVariants.configureEach {
+        outputs.configureEach {
             if (buildType.name == "release") {
-                output.outputFileName = "grevling.apk"
+                (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl)
+                    .outputFileName = "grevling.apk"
             }
         }
     }
@@ -84,7 +84,7 @@ android {
     }
 
     lint {
-        abortOnError = false
+        abortOnError = true
         htmlReport = true
         xmlReport = true
     }
