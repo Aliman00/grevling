@@ -62,7 +62,6 @@ object AutoReplyHelper {
             Logger.d(TAG, "Auto-svar allerede sendt nylig, hopper over")
             return
         }
-        recentReplies[phoneNumber] = now
 
         val message = getAutoReplyMessage(prefs, messageType)
 
@@ -70,6 +69,9 @@ object AutoReplyHelper {
             Logger.d(TAG, "Ingen auto-svar melding satt for ${messageType.logName}")
             return
         }
+
+        // Oppdater rate-limit kun etter at meldingen er validert
+        recentReplies[phoneNumber] = now
 
         if (message.length > MAX_SMS_LENGTH) {
             Logger.w(TAG, "Auto-svar melding er ${message.length} tegn, sendes som multi-part SMS")

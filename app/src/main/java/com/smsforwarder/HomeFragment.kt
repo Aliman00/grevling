@@ -165,17 +165,24 @@ class HomeFragment : BaseFragment() {
         autoReplySwitch.isChecked = prefs.getBoolean(PreferencesManager.KEY_AUTO_REPLY_ENABLED, false)
         sameMessageSwitch.isChecked = prefs.getBoolean(PreferencesManager.KEY_USE_SAME_MESSAGE, true)
 
-        // Last meldinger - bruk default kun for visning, ikke skriv til prefs før bruker endrer
+        // Last meldinger — lagre standardverdi til prefs hvis den ikke finnes,
+        // slik at AutoReplyHelper alltid kan lese meldingen.
         val unifiedMsg = prefs.getString(PreferencesManager.KEY_UNIFIED_REPLY_MESSAGE, null)
-            ?: getString(R.string.default_unified_message)
+            ?: getString(R.string.default_unified_message).also {
+                prefs.edit().putString(PreferencesManager.KEY_UNIFIED_REPLY_MESSAGE, it).apply()
+            }
         unifiedMessageEdit.setText(unifiedMsg)
 
         val smsMsg = prefs.getString(PreferencesManager.KEY_SMS_REPLY_MESSAGE, null)
-            ?: getString(R.string.default_sms_message)
+            ?: getString(R.string.default_sms_message).also {
+                prefs.edit().putString(PreferencesManager.KEY_SMS_REPLY_MESSAGE, it).apply()
+            }
         smsReplyEdit.setText(smsMsg)
 
         val callMsg = prefs.getString(PreferencesManager.KEY_CALL_REPLY_MESSAGE, null)
-            ?: getString(R.string.default_call_message)
+            ?: getString(R.string.default_call_message).also {
+                prefs.edit().putString(PreferencesManager.KEY_CALL_REPLY_MESSAGE, it).apply()
+            }
         callReplyEdit.setText(callMsg)
     }
 
