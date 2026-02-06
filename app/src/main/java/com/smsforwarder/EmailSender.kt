@@ -129,6 +129,12 @@ object EmailSender {
     }
 
     /**
+     * Fjerner CR/LF fra subject for å hindre SMTP header-injeksjon
+     */
+    internal fun sanitizeSubject(input: String): String =
+        input.replace("\r", " ").replace("\n", " ").trim().take(120)
+
+    /**
      * Escapes HTML special characters to prevent HTML injection
      */
     internal fun escapeHtml(text: String): String {
@@ -222,8 +228,9 @@ object EmailSender {
 
             try {
                 val session = createSession(gmailAddress, gmailPassword)
-                val htmlBody = "<h3>${escapeHtml(subject)}</h3><p>${escapeHtml(body)}</p>"
-                val message = createMessage(session, gmailAddress, toEmail, subject, htmlBody)
+                val safeSubject = sanitizeSubject(subject)
+                val htmlBody = "<h3>${escapeHtml(safeSubject)}</h3><p>${escapeHtml(body)}</p>"
+                val message = createMessage(session, gmailAddress, toEmail, safeSubject, htmlBody)
 
                 sendWithRetry(session, message)
 
