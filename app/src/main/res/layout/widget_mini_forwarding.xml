@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mini widget layout - 1x1 størrelse, ikon med navn -->
+<!-- Mini widget layout - 1x1, ikon med toggle -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,28 +7,29 @@
 
     <LinearLayout
         android:id="@+id/widget_mini_background"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_gravity="center"
-        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:gravity="center"
-        android:background="@drawable/widget_mini_background_inactive">
+        android:orientation="vertical"
+        android:background="@drawable/widget_mini_background_active">
 
         <TextView
             android:id="@+id/widget_mini_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="⏸️"
-            android:textSize="24sp" />
+            android:text="✅"
+            android:textSize="28sp"
+            android:gravity="center" />
 
         <TextView
+            android:id="@+id/widget_mini_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
             android:textColor="#FFFFFF"
-            android:textSize="9sp"
-            android:maxLines="1" />
-
+            android:textSize="10sp"
+            android:gravity="center"
+            android:layout_marginTop="2dp" />
     </LinearLayout>
 
 </FrameLayout>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Network security configuration.
-    Blokkerer all cleartext (HTTP) trafikk.
-    Appen kommuniserer kun via TLS (SMTP over STARTTLS).
+Network security configuration.
+Blokkerer all cleartext HTTP trafikk.
+Appen kommuniserer kun via TLS (SMTP over STARTTLS).
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />

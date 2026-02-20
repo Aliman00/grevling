@@ -130,7 +130,7 @@ SMS/Anrop/App-varsel
     ↓
 SmsReceiver / NotificationMonitorService
     ↓
-EmailSender (bakgrunnstråd)
+EmailWorker (WorkManager)
     ↓
 Gmail SMTP (TLS 1.2/1.3)
 ```
@@ -139,16 +139,20 @@ Gmail SMTP (TLS 1.2/1.3)
 
 | Komponent | Beskrivelse |
 |-----------|-------------|
-| `MainActivity` | Hoved-aktivitet med BottomNavigation |
-| `HomeFragment` | Hjem-skjerm med status og auto-svar innstillinger |
-| `AppSelectionFragment` | Velg apper for varsel-overvåking |
-| `SettingsFragment` | Gmail-konfigurasjon og tillatelser |
+| `MainActivity` | Eneste Activity, setter opp Compose og navigasjon |
+| `HomeScreen` | Hjem-skjerm med status og auto-svar innstillinger |
+| `HomeViewModel` | Business logic for HomeScreen |
+| `AppsScreen` | Velg apper for varsel-overvåking |
+| `AppsViewModel` | Business logic for AppsScreen |
+| `SettingsScreen` | Gmail-konfigurasjon og tillatelser |
+| `SettingsViewModel` | Business logic for SettingsScreen |
+| `PreferencesRepository` | Singleton for preference-adgang |
 | `SmsReceiver` | BroadcastReceiver for innkommende SMS |
-| `NotificationMonitorService` | Lytter til tapte anrop og app-varsler |
-| `EmailSender` | Singleton for SMTP email-sending |
+| `NotificationMonitorService` | NotificationListenerService for app-varsler |
+| `EmailWorker` | WorkManager worker for bakgrunns-email sending |
+| `EmailSender` | SMTP email-sending |
 | `AutoReplyHelper` | Håndterer auto-svar SMS |
-| `PreferencesManager` | Kryptert lagring av credentials |
-| `ForwardingStats` | Statistikk over videresendinger |
+| `EncryptedPrefsFactory` | Factory for kryptert SharedPreferences |
 
 ## 🧪 Testing
 
@@ -165,25 +169,47 @@ Gmail SMTP (TLS 1.2/1.3)
 
 ## 📊 Tekniske detaljer
 
-### Avhengigheter
+### Tech Stack
 
 ```kotlin
+// Kotlin
+implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+// Jetpack Compose
+implementation(platform("androidx.compose:compose-bom:2024.02.00"))
+implementation("androidx.compose.ui:ui")
+implementation("androidx.compose.ui:ui-graphics")
+implementation("androidx.compose.ui:ui-tooling-preview")
+implementation("androidx.compose.material3:material3")
+implementation("androidx.compose.material:material-icons-extended")
+implementation("androidx.activity:activity-compose:1.8.2")
+implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+implementation("androidx.navigation:navigation-compose:2.7.6")
+
 // AndroidX
 implementation("androidx.core:core-ktx:1.12.0")
 implementation("androidx.appcompat:appcompat:1.6.1")
 implementation("androidx.security:security-crypto:1.1.0-alpha06")
-implementation("androidx.fragment:fragment-ktx:1.6.2")
 
-// Material Design
-implementation("com.google.android.material:material:1.11.0")
+// WorkManager
+implementation("androidx.work:work-runtime-ktx:2.9.0")
 
 // JavaMail for SMTP
 implementation("com.sun.mail:android-mail:1.6.7")
 implementation("com.sun.mail:android-activation:1.6.7")
 
-// Kotlin Coroutines
-implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+// Image loading
+implementation("io.coil-kt:coil-compose:2.5.0")
 ```
+
+### Arkitektur-pattern
+
+- **MVVM** med Jetpack Compose
+- **StateFlow** for reaktiv state-håndtering
+- **Singleton Repository** for data-adgang
+- **Manual DI** (ingen Hilt/Koin)
+- **Single Activity** med Navigation Compose
 
 ### Sikkerhetsfunksjoner
 
@@ -192,7 +218,7 @@ implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 - **HTML-escaping** av alt email-innhold
 - **Rate-limiting**: Maks 10 emails per minutt
 - **Retry-logikk**: 3 forsøk med exponential backoff
-- **Thread-safe** operasjoner med synchronized metoder
+- **Thread-safe** operasjoner med koroutiner
 - **GDPR-compliant** logging (ingen sensitiv data)
 
 ## 🐛 Feilsøking

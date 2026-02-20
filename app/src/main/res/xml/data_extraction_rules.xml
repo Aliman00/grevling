@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Data extraction rules for Android 12+ (API 31+).
-    Blokkerer all automatisk backup/overføring av app-data
-    for å beskytte krypterte credentials.
+Data extraction rules for Android 12+ (API 31+).
+Blokkerer all automatisk backup/overføring av app-data for å beskytte krypterte credentials.
 -->
 <data-extraction-rules>
     <cloud-backup>

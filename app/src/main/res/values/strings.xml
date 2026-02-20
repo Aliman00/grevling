@@ -1,91 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ================================================================ -->
+    <!-- APP NAME                                                         -->
+    <!-- ================================================================ -->
     <string name="app_name">Grevling</string>
     <string name="app_header_title">Grevling Appen</string>
 
-    <!-- Home Fragment -->
-    <string name="home_screen_subtitle">SMS &amp; Anrops-varsler</string>
-    <string name="status_circle_active">Aktivert</string>
-    <string name="status_circle_paused">Pauset</string>
-    <string name="status_label_forwards_to">Varslinger blir sendt til:</string>
-    <string name="status_no_email">Ikke konfigurert</string>
+    <!-- ================================================================ -->
+    <!-- HOME FRAGMENT - Hovedskjerm                                      -->
+    <!-- ================================================================ -->
+    <string name="homescreen_subtitle">SMS &amp; Anrops-varsler</string>
+    <string name="status_info_paused">Videresending er deaktivert</string>
+    <string name="status_label_forwards_to">Varslinger blir sendt til</string>
     <string name="toggle_button_activate">AKTIVER VIDERESENDING</string>
     <string name="toggle_button_pause">PAUSE VIDERESENDING</string>
-    <string name="status_needs_notification">⚠️ Trenger notifikasjonstilgang</string>
-    <string name="status_missing_config">⚙️ Mangler konfigurering</string>
-    <string name="toggle_auto_reply">Auto-svar</string>
-    <string name="lock_auto_reply">🔒 Lås opp auto-svar</string>
-    <string name="unlock_auto_reply">🔓 Lås auto-svar</string>
-    <string name="same_message_toggle">Bruk samme melding for SMS og anrop</string>
-    <string name="message_label">Melding:</string>
-    <string name="saved_indicator">✓ Lagret</string>
-    <string name="auto_reply_sms_label">Auto-svar for SMS:</string>
-    <string name="auto_reply_call_label">Auto-svar for tapt anrop:</string>
+    <string name="status_needs_notification">Trenger notifikasjonstilgang</string>
+    <string name="status_missing_config">Mangler konfigurering</string>
 
-    <!-- Default Messages -->
+    <!-- Auto-svar -->
+    <string name="toggle_auto_reply">Auto-svar</string>
+    <string name="auto_reply_description">Send automatisk svar-SMS</string>
+    <string name="same_message_toggle">Bruk samme melding for SMS og anrop</string>
+    <string name="message_label">Melding</string>
+    <string name="saved_indicator">✓ Lagret</string>
+    <string name="saving_indicator">Lagres...</string>
+    <string name="auto_reply_sms_label">Auto-svar for SMS</string>
+    <string name="auto_reply_call_label">Auto-svar for tapt anrop</string>
+
+    <!-- Default meldinger -->
     <string name="default_unified_message">Hei! Jeg kan ikke svare nå. Jeg får varsler på email, så jeg kontakter deg snart.</string>
     <string name="default_sms_message">Hei, jeg kan ikke svare på SMS nå. Jeg får varsel på email, så jeg kontakter deg snart.</string>
     <string name="default_call_message">Hei, jeg kan ikke svare telefonen nå. Send SMS eller email hvis viktig.</string>
 
-    <!-- Settings Fragment -->
+    <!-- ================================================================ -->
+    <!-- SETTINGS FRAGMENT - Innstillinger                                -->
+    <!-- ================================================================ -->
     <string name="settings_screen_title">Innstillinger</string>
     <string name="settings_screen_subtitle">Konfigurer email og tillatelser</string>
     <string name="settings_header">Konto-innstillinger</string>
-    <string name="recipient_email_label">Mottaker email (hvor varsler sendes):</string>
+    <string name="recipient_email_label">Mottaker email (hvor varsler sendes)</string>
     <string name="email_hint">din@email.no</string>
-    <string name="gmail_address_label">Gmail-adresse (sender):</string>
+    <string name="gmail_address_label">Gmail-adresse (sender)</string>
     <string name="gmail_address_hint">dinbrukernavn@gmail.com</string>
-    <string name="gmail_password_label">Gmail App Password:</string>
+    <string name="gmail_password_label">Gmail App Password</string>
     <string name="gmail_password_hint">16-tegn App Password (uten mellomrom)</string>
-    <string name="gmail_password_info">🔐 Du trenger et App Password fra Google.\nSe README for guide.</string>
+    <string name="gmail_password_info">Du trenger et App Password fra Google. Se README for guide.</string>
     <string name="app_password_help_button">❓ Hvordan få Gmail App Password?</string>
-    <string name="test_email_button">📧 Send test-email</string>
-    <string name="test_email_sending">⏳ Sender...</string>
-    <string name="test_email_error_empty">❌ Fyll ut alle felter først</string>
-    <string name="test_email_error_invalid_recipient">❌ Ugyldig mottaker email-adresse</string>
-    <string name="test_email_error_invalid_gmail">❌ Ugyldig Gmail-adresse</string>
-    <string name="test_email_warning_workspace">⚠️ Google Workspace: Sjekk at SMTP er aktivert for kontoen</string>
+    <string name="app_password_dialog_title">Hvordan få Gmail App Password</string>
+    <string name="app_password_dialog_content">📱 Slik får du Gmail App Password:\n\n1️⃣ Aktiver 2-faktor autentisering (2FA)\n   • Gå til myaccount.google.com/security\n   • Velg \"2-Step Verification\"\n   • Følg instruksjonene\n\n2️⃣ Opprett App Password\n   • Gå til myaccount.google.com/apppasswords\n   • Skriv inn Appnavn (f.eks. \"Grevling Appen\")\n   • Klikk \"Opprett\"\n\n3️⃣ Kopier passordet\n   • Google viser et 16-tegn passord\n   • Kopier det (fjern mellomrom)\n   • Lim det inn i \"Gmail App Password\"-feltet\n\n4️⃣ Test konfigurasjonen\n   • Trykk \"📧 Send test-email\"\n   • Sjekk at du mottar emailen\n\n⚠️ VIKTIG: Du MÅ ha aktivert 2FA på Google-kontoen først!</string>
+    <string name="common_ok">OK</string>
+    <string name="test_email_button">Send test-email</string>
+    <string name="test_email_sending">Sender...</string>
+    <string name="test_email_error_empty">Fyll ut alle felter først</string>
+    <string name="test_email_error_invalid_recipient">Ugyldig mottaker email-adresse</string>
+    <string name="test_email_error_invalid_gmail">Ugyldig Gmail-adresse</string>
+    <string name="test_email_warning_workspace">Google Workspace: Sjekk at SMTP er aktivert for kontoen</string>
+
+    <!-- Permissions -->
     <string name="permissions_header">Tillatelser</string>
-    <string name="permissions_checking">Sjekker tillatelser…</string>
     <string name="notification_access_button">Gi varseltilgang</string>
     <string name="request_permissions_button">Be om SMS/Anrop-tillatelser</string>
-    <string name="notification_settings_toast">Aktiver \'Grevling\' i listen</string>
-    <string name="permissions_denied_toast">⚠️ %d tillatelser ble nektet</string>
-    <string name="permissions_granted_toast">✅ Alle tillatelser innvilget</string>
-    <string name="permissions_already_granted">✅ Alle tillatelser allerede innvilget</string>
-    <string name="permissions_status_notification_ok">✅ Varseltilgang: OK\n</string>
-    <string name="permissions_status_notification_missing">❌ Varseltilgang: Mangler\n</string>
+    <string name="battery_rationale_title">⚠️ Viktig for pålitelighet</string>
+    <string name="battery_rationale_message">For at GrevlingAppen skal kunne videresende varsler pålitelig når telefonen sover (Doze Mode), må den unntas fra batterioptimalisering.\n\nDette bruker minimalt med strøm, men sikrer at appen ikke blir stoppet av Android midt på natten.</string>
+    <string name="battery_rationale_confirm">Åpne innstillinger</string>
+    <string name="battery_optimization_button">⚠️ Aktiver bakgrunnskjøring (Anbefalt)</string>
+    <string name="notification_settings_toast">Aktiver Grevling i listen</string>
+    <string name="permissions_denied_toast">Én eller flere tillatelser ble nektet</string>
+    <string name="permissions_granted_toast">Alle tillatelser innvilget</string>
+    <string name="permissions_already_granted">Alle tillatelser allerede innvilget</string>
+    <string name="permission_rationale_title">Trenger tillatelser</string>
+    <string name="permission_rationale_message">For at GrevlingAppen skal fungere, trenger den tilgang til:\n\n• SMS: For å kunne lese og videresende innkommende meldinger, og for å sende auto-svar.\n• Anrop: For å kunne varsle om tapte anrop.\n• Kontakter: For å kunne vise navn i stedet for bare telefonnummer.\n\nInformasjonen sendes kun til din konfigurerte email-adresse og blir ikke brukt til noe annet.</string>
+    <string name="permission_rationale_confirm">Fortsett</string>
+    <string name="permission_rationale_cancel">Avbryt</string>
+    <string name="notification_rationale_title">Trenger varseltilgang</string>
+    <string name="notification_rationale_message">For at GrevlingAppen skal kunne videresende varsler fra apper som Messenger, WhatsApp eller Snapchat, må den ha tilgang til å lese system-varsler.\n\nNår du trykker fortsett blir du sendt til system-innstillingene. Der må du finne \"Grevling\" i listen og skru på bryteren.</string>
+    <string name="notification_rationale_confirm">Åpne innstillinger</string>
+    <string name="permissions_status_notification_ok">✓ Varseltilgang: OK</string>
+    <string name="permissions_status_notification_missing">✗ Varseltilgang: Mangler</string>
+    <string name="permissions_status_sms_ok">✓ SMS/Anrop tillatelser: OK</string>
+    <string name="permissions_status_sms_missing">✗ SMS/Anrop tillatelser: Mangler</string>
+    <string name="permissions_status_battery_ok">✓ Bakgrunnskjøring: OK</string>
+    <string name="permissions_status_battery_missing">✗ Bakgrunnskjøring: Begrenset (Anbefales aktivert)</string>
     <string name="permissions_status_sms">SMS/Anrop tillatelser: %d/3</string>
-    <string name="restricted_settings_button">❓ Tillatelser avvist?</string>
+    <string name="restricted_settings_button">Tillatelser avvist?</string>
+    <string name="restricted_settings_help_link">❓ Tillatelser avvist automatisk?</string>
     <string name="restricted_settings_title">Begrensede innstillinger (Android 13+)</string>
-    <string name="restricted_settings_guide">Hvis tillatelser blir avvist automatisk, må du aktivere \"Tillat begrensede innstillinger\":\n\n1️⃣ Åpne Innstillinger\n2️⃣ Gå til Apper → Grevling\n3️⃣ Trykk på ⋮ (tre prikker) øverst\n4️⃣ Velg \"Tillat begrensede innstillinger\"\n5️⃣ Bekreft med enhetens PIN/mønster\n6️⃣ Gå tilbake og prøv igjen\n\n⚠️ Dette er en Android-sikkerhetsmekanisme for sideloadede apper.</string>
+    <string name="restricted_settings_guide">Hvis tillatelser blir avvist automatisk, eller du ikke får skrudd på varseltilgang, må du aktivere \"Tillat begrensede innstillinger\":\n\n1. Åpne Innstillinger\n2. Gå til Apper → Grevling\n3. Trykk på tre prikker (⋮) øverst\n4. Velg \"Tillat begrensede innstillinger\"\n5. Bekreft med enhetens PIN/mønster\n6. Gå tilbake til denne appen og prøv igjen.\n\nDette er en Android-sikkerhetsmekanisme for apper som ikke er installert fra Google Play Store.</string>
     <string name="open_app_settings">Åpne app-innstillinger</string>
 
-    <!-- MainActivity -->
-    <string name="permissions_needed_toast">⚠️ Appen trenger alle tillatelser for å fungere. Nektet: %d</string>
+    <!-- ================================================================ -->
+    <!-- MAIN ACTIVITY                                                    -->
+    <!-- ================================================================ -->
+    <string name="permissions_needed_toast">Appen trenger alle tillatelser for å fungere. Nektet: %d</string>
 
-    <!-- Bottom Navigation -->
+    <!-- ================================================================ -->
+    <!-- BOTTOM NAVIGATION                                                -->
+    <!-- ================================================================ -->
     <string name="nav_home">Hjem</string>
     <string name="nav_apps">Apper</string>
     <string name="nav_settings">Innstillinger</string>
 
-    <!-- Widget -->
-    <string name="widget_status_active">Active</string>
-    <string name="widget_status_paused">Paused</string>
-    <string name="widget_description">Slå SMS-videresending av/på</string>
+    <!-- ================================================================ -->
+    <!-- WIDGET                                                           -->
+    <!-- ================================================================ -->
+    <string name="widget_status_active">Aktiv</string>
+    <string name="widget_status_paused">Pauset</string>
+    <string name="widget_description">Slå videresending av/på</string>
     <string name="widget_mini_name">Grevling Toggle</string>
     <string name="widget_mini_description">Kompakt på/av-knapp for videresending</string>
     <string name="widget_stats_name">Grevling Stats</string>
     <string name="widget_stats_description">Viser statistikk og toggle-knapp</string>
     <string name="widget_button_pause">PAUSE</string>
-    <string name="widget_button_activate">ACTIVATE</string>
+    <string name="widget_button_activate">AKTIVER</string>
 
-    <!-- App Selection -->
+    <!-- ================================================================ -->
+    <!-- STATS & TIME                                                     -->
+    <!-- ================================================================ -->
+    <string name="stats_time_just_now">Nå nettopp</string>
+    <string name="stats_time_minutes_ago">%d min siden</string>
+    <string name="stats_time_hours_ago">%d timer siden</string>
+    <string name="stats_time_days_ago">%d dager siden</string>
+    <string name="stats_time_never">Aldri</string>
+    <string name="widget_forwarded_today">%d videresendt i dag</string>
+    <string name="widget_last_time">Sist: %s</string>
+    <string name="widget_stats_combined">%1$d SMS · %2$d anrop</string>
+
+    <!-- ================================================================ -->
+    <!-- EMAIL SENDER                                                     -->
+    <!-- ================================================================ -->
+    <string name="email_footer_text">Sendt automatisk fra &lt;b&gt;GrevlingAppen&lt;/b&gt;</string>
+    <string name="email_sms_subject">📱 Ny SMS fra %s</string>
+    <string name="email_sms_body">Melding: %s</string>
+    <string name="email_call_subject">📞 Tapt anrop fra %s</string>
+    <string name="email_call_body">Nummer: %s\nTidspunkt: %s</string>
+    <string name="email_notif_subject">📱 %s varsel</string>
+    <string name="email_notif_body">App: %s\nEmne: %s\nMelding: %s\n\nTidspunkt: %s</string>
+    
+    <string name="email_test_subject">Test Email - %s</string>
+    <string name="email_test_body_title">Test Email</string>
+    <string name="email_test_body_content">Email-konfigurasjonen din fungerer utmerket! ✅</string>
+    <string name="email_test_result_success">Test-email sendt! ✅</string>
+    <string name="email_test_result_auth_error">Autentisering feilet. Sjekk Gmail-adresse og App Password.</string>
+    <string name="email_test_result_config_error">Email ikke konfigurert</string>
+    <string name="email_test_result_error">Sending feilet: %s</string>
+    <string name="email_test_result_unknown_error">Ukjent feil: %s</string>
+
+    <string name="widget_mini_icon_active">✅</string>
+    <string name="widget_mini_icon_paused">⏸️</string>
+
+    <!-- ================================================================ -->
+    <!-- APP SELECTION - Overvåkede apper                                 -->
+    <!-- ================================================================ -->
     <string name="app_selection_title">Overvåkede apper</string>
     <string name="app_selection_subtitle">Velg hvilke apper som skal sende varsler til email</string>
     <string name="selected_apps_count">%d apper valgt</string>
-    <string name="search_apps_hint">Søk etter apper…</string>
+    <string name="search_apps_hint">Søk etter apper</string>
     <string name="chip_all_apps">Alle apper</string>
     <string name="chip_selected_apps">Valgte</string>
     <string name="app_icon_description">App-ikon</string>
+    <string name="search_description">Søk</string>
+    <string name="header_icon_description">Grevling ikon</string>
+    <string name="status_circle_active_label">AKTIVERT</string>
+    <string name="status_circle_paused_label">PAUSET</string>
+    <string name="status_circle_warning_label">VARSEL</string>
 </resources>

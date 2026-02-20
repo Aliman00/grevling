@@ -1,44 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Material 3 Color Scheme - Modern Blue/Teal -->
-    <!-- Primary -->
+    <!-- ================================================================ -->
+    <!-- MATERIAL 3 COLOR SCHEME - Modern Blue/Teal                       -->
+    <!-- ================================================================ -->
+
+    <!-- Primary - Hovedfarge for appen (teal/blågrønn) -->
     <color name="md_primary">#006A6A</color>
     <color name="md_on_primary">#FFFFFF</color>
     <color name="md_primary_container">#6FF7F6</color>
     <color name="md_on_primary_container">#002020</color>
-    
-    <!-- Secondary -->
+
+    <!-- Secondary - Sekundærfarge (mørkere teal) -->
     <color name="md_secondary">#4A6363</color>
     <color name="md_on_secondary">#FFFFFF</color>
     <color name="md_secondary_container">#CCE8E7</color>
     <color name="md_on_secondary_container">#051F1F</color>
-    
-    <!-- Background and Surface -->
+
+    <!-- Background and Surface - Bakgrunnsfarger -->
     <color name="md_background">#F5FAFA</color>
     <color name="md_surface">#FFFFFF</color>
     <color name="md_surface_variant">#DAE5E4</color>
     <color name="md_on_surface">#191C1C</color>
     <color name="md_on_surface_variant">#3F4948</color>
-    
-    <!-- Outline -->
+
+    <!-- Outline - Borders og linjer -->
     <color name="md_outline">#6F7978</color>
     <color name="md_outline_variant">#BEC9C8</color>
-    
-    <!-- Status Colors -->
-    <color name="status_success">#1B873B</color>
-    <color name="status_warning">#7D5800</color>
-    <color name="status_error">#BA1A1A</color>
-    <color name="status_error_container">#FFDAD6</color>
-    
-    <!-- Status Circle Colors -->
-    <color name="status_active_color">#4CAF50</color>
-    <color name="status_paused_color">#EF5350</color>
-    
-    <!-- Navigation -->
-    <color name="nav_item_selected">#006A6A</color>
-    <color name="nav_item_default">#6F7978</color>
 
-    <!-- Text Colors (used in SettingsFragment) -->
-    <color name="text_success">#1B873B</color>
-    <color name="text_warning">#7D5800</color>
+    <!-- Status Circle Colors - For status-sirkel i HomeFragment -->
+    <color name="status_active_color">#4CAF50</color>  <!-- Grønn når aktiv -->
+    <color name="status_paused_color">#EF5350</color>  <!-- Rød når pauset -->
+
+    <!-- Widget Colors -->
+    <color name="widget_active">#A8E6CF</color>
+    <color name="widget_inactive">#9CA3AF</color>
+    <color name="widget_text_primary">#FFFFFF</color>
+    <color name="widget_text_secondary">#B0FFFFFF</color>
 </resources>
