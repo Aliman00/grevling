@@ -19,10 +19,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +32,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -279,33 +280,46 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Recipient Email
-                TextField(
+                OutlinedTextField(
                     value = uiState.recipientEmail,
                     onValueChange = { viewModel.updateRecipientEmail(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusEvent { focusState ->
+                            if (!focusState.isFocused) viewModel.flushRecipientEmail()
+                        },
                     label = { Text(stringResource(R.string.recipient_email_label)) },
                     placeholder = { Text(stringResource(R.string.email_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Gmail Address
-                TextField(
+                OutlinedTextField(
                     value = uiState.gmailAddress,
                     onValueChange = { viewModel.updateGmailAddress(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusEvent { focusState ->
+                            if (!focusState.isFocused) viewModel.flushGmailAddress()
+                        },
                     label = { Text(stringResource(R.string.gmail_address_label)) },
                     placeholder = { Text(stringResource(R.string.gmail_address_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Gmail Password
-                TextField(
+                OutlinedTextField(
                     value = passwordInput,
                     onValueChange = { passwordInput = it; viewModel.updateGmailPassword(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onFocusEvent { focusState ->
+                            if (!focusState.isFocused) viewModel.flushGmailPassword()
+                        },
                     label = { Text(stringResource(R.string.gmail_password_label)) },
                     placeholder = {
                         Text(
@@ -313,7 +327,6 @@ fun SettingsScreen(
                             else stringResource(R.string.gmail_password_hint)
                         )
                     },
-                    modifier = Modifier.fillMaxWidth(),
                     visualTransformation = PasswordVisualTransformation(),
                     singleLine = true
                 )

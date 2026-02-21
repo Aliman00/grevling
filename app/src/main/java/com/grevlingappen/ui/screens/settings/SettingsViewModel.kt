@@ -10,7 +10,7 @@ import com.grevlingappen.data.PreferencesRepository
 import com.grevlingappen.utils.EmailSender
 import com.grevlingappen.utils.Logger
 import com.grevlingappen.utils.PermissionsHelper
-import com.grevlingappen.utils.setupDebounceSave
+import com.grevlingappen.utils.setupDebounceSaveWithFlush
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +25,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     companion object {
         private const val TAG = "SettingsViewModel"
-        private const val DEBOUNCE_MS = 500L
+        private const val DEBOUNCE_MS = 200L
     }
 
     // Bruk singleton istedenfor ny instans
@@ -42,6 +42,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val navigationEvent = _navigationEvent.asSharedFlow()
 
     private var pendingGmailPassword: String = ""
+
+    private var recipientEmailFlush: (() -> Unit)? = null
+    private var gmailAddressFlush: (() -> Unit)? = null
+    private var gmailPasswordFlush: (() -> Unit)? = null
 
     init {
         loadSettings()
@@ -60,16 +64,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun setupDebounce() {
-        // Disse feltene har ingen default - de bruker null som defaultValue
-        setupDebounceSave(recipientEmailInput, DEBOUNCE_MS, {}, { repository.setRecipientEmail(it) }, null)
-        setupDebounceSave(gmailAddressInput, DEBOUNCE_MS, {}, { repository.setGmailAddress(it) }, null)
-        setupDebounceSave(gmailPasswordInput, DEBOUNCE_MS, { 
-             // Oppdater om vi har passord når lagring er ferdig
-             _uiState.value = _uiState.value.copy(hasGmailPassword = repository.getGmailPassword().isNotEmpty())
+        recipientEmailFlush = setupDebounceSaveWithFlush(recipientEmailInput, DEBOUNCE_MS, {}, { repository.setRecipientEmail(it) }, null)
+        gmailAddressFlush = setupDebounceSaveWithFlush(gmailAddressInput, DEBOUNCE_MS, {}, { repository.setGmailAddress(it) }, null)
+        gmailPasswordFlush = setupDebounceSaveWithFlush(gmailPasswordInput, DEBOUNCE_MS, { 
+            _uiState.value = _uiState.value.copy(hasGmailPassword = repository.getGmailPassword().isNotEmpty())
         }, { 
             repository.setGmailPassword(it)
         }, null)
     }
+
+    fun flushRecipientEmail() { recipientEmailFlush?.invoke() }
+    fun flushGmailAddress() { gmailAddressFlush?.invoke() }
+    fun flushGmailPassword() { gmailPasswordFlush?.invoke() }
 
     fun updateRecipientEmail(email: String) {
         _uiState.value = _uiState.value.copy(recipientEmail = email)
@@ -82,6 +88,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun updateGmailPassword(password: String) {
+        _uiState.value = _uiState.value.copy(gmailPassword = password)
         gmailPasswordInput.tryEmit(password)
     }
 
@@ -91,8 +98,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun testEmail() {
         val state = _uiState.value
 
-        // Validering
-        if (state.recipientEmail.isEmpty() || state.gmailAddress.isEmpty() || !state.hasGmailPassword) {
+        // Validering - sjekk både lagret passord og direkte input
+        val hasPassword = state.hasGmailPassword || !state.gmailPassword.isNullOrEmpty()
+        if (state.recipientEmail.isEmpty() || state.gmailAddress.isEmpty() || !hasPassword) {
             _uiState.value = state.copy(testEmailResultRes = R.string.test_email_error_empty)
             return
         }
@@ -113,9 +121,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             testEmailResultCustom = ""
         )
 
-        // Bruker den nye suspend-funksjonen i EmailSender
+        // Bruker UI state-verdier direkte i stedet for å vente på debounce
         viewModelScope.launch {
-            val result = EmailSender.testEmailConfig(getApplication())
+            val result = EmailSender.testEmailConfigWithParams(
+                context = getApplication(),
+                gmailAddress = state.gmailAddress,
+                gmailPassword = state.gmailPassword,
+                recipientEmail = state.recipientEmail
+            )
             _uiState.value = _uiState.value.copy(
                 isSendingTestEmail = false,
                 testEmailResultCustom = result
@@ -162,6 +175,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 data class SettingsUiState(
     val recipientEmail: String = "",
     val gmailAddress: String = "",
+    val gmailPassword: String? = null,
     val hasGmailPassword: Boolean = false,
     val isSendingTestEmail: Boolean = false,
     val testEmailResultRes: Int = 0,

@@ -46,3 +46,47 @@ fun ViewModel.setupDebounceSave(
         }
     }
 }
+
+/**
+ * Setup debounce with immediate save on demand.
+ * Returns a flush function that can be called to save immediately.
+ */
+@OptIn(FlowPreview::class)
+fun ViewModel.setupDebounceSaveWithFlush(
+    flow: MutableSharedFlow<String>,
+    debounceTimeMs: Long = 200L,
+    onStatusChange: (SaveStatus) -> Unit,
+    saveAction: suspend (String) -> Unit,
+    defaultValue: String? = null
+): () -> Unit {
+    var pendingValue: String? = null
+    
+    val flush: () -> Unit = {
+        pendingValue?.let { value ->
+            onStatusChange(SaveStatus.SAVING)
+            val valueToSave = if (value.isBlank() && defaultValue != null) defaultValue else value
+            viewModelScope.launch {
+                saveAction(valueToSave)
+                onStatusChange(SaveStatus.SAVED)
+                delay(3000)
+                onStatusChange(SaveStatus.NONE)
+            }
+        }
+        Unit
+    }
+    
+    viewModelScope.launch {
+        flow.debounce(debounceTimeMs).collect { value ->
+            pendingValue = value
+        }
+    }
+    
+    // Also collect immediately to update pendingValue
+    viewModelScope.launch {
+        flow.collect { value ->
+            pendingValue = value
+        }
+    }
+    
+    return flush
+}

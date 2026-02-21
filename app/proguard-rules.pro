@@ -14,26 +14,25 @@
 
 
 # ----------------------------------------------------------------------------
-# JAVAMAIL - Kritisk for e-post funksjonalitet
+# JAKARTA MAIL - Kritisk for e-post funksjonalitet
 # ----------------------------------------------------------------------------
-# JavaMail bruker reflection for å laste klasser dynamisk
+# Jakarta Mail (formerly JavaMail) bruker reflection for å laste klasser dynamisk
 # Hvis disse fjernes, vil e-post-sending feile i release-bygg
 
-# Ignorer warnings for manglende Java AWT/Security klasser
-# (disse finnes ikke på Android, men JavaMail refererer til dem)
--dontwarn java.awt.**
--dontwarn javax.security.**
--dontwarn javax.activation.**
+# Ignorer warnings for manglende Jakarta AWT/Security klasser
+# (disse finnes ikke på Android, men Jakarta Mail refererer til dem)
+-dontwarn jakarta.awt.**
+-dontwarn jakarta.security.**
+-dontwarn jakarta.activation.**
 
-# Behold alle JavaMail klasser
--keep class javax.mail.** { *; }
--keep class javax.activation.** { *; }
--keep class com.sun.mail.** { *; }
--keep class com.sun.activation.** { *; }
+# Behold alle Angus Mail klasser (formerly JavaMail)
+-keep class jakarta.mail.** { *; }
+-keep class jakarta.activation.** { *; }
+-keep class org.eclipse.angus.** { *; }
 
-# Behold alle members i JavaMail internet-klasser
--keep class javax.mail.internet.** { *; }
--keepclassmembers class javax.mail.internet.** { *; }
+# Behold alle members i Jakarta internet-klasser
+-keep class jakarta.mail.internet.** { *; }
+-keepclassmembers class jakarta.mail.internet.** { *; }
 
 # ----------------------------------------------------------------------------
 # ANDROIDX SECURITY CRYPTO - For EncryptedSharedPreferences
@@ -122,6 +121,21 @@
 -dontwarn javax.annotation.concurrent.GuardedBy
 -dontwarn javax.annotation.concurrent.ThreadSafe
 -dontwarn org.joda.time.Instant
+
+# Missing classes from Angus Mail
+-dontwarn java.awt.Image
+-dontwarn java.awt.Toolkit
+-dontwarn javax.security.auth.callback.NameCallback
+-dontwarn javax.security.sasl.RealmCallback
+-dontwarn javax.security.sasl.RealmChoiceCallback
+-dontwarn javax.security.sasl.Sasl
+-dontwarn javax.security.sasl.SaslClient
+-dontwarn javax.security.sasl.SaslClientFactory
+-dontwarn javax.security.sasl.SaslException
+-dontwarn org.graalvm.nativeimage.hosted.Feature$BeforeAnalysisAccess
+-dontwarn org.graalvm.nativeimage.hosted.Feature$IsInConfigurationAccess
+-dontwarn org.graalvm.nativeimage.hosted.Feature
+-dontwarn org.graalvm.nativeimage.hosted.RuntimeReflection
 
 # ============================================================================
 # NOTATER

@@ -121,13 +121,25 @@ object EmailSender {
         }
     }
 
-    suspend fun testEmailConfig(context: Context): String = withContext(Dispatchers.IO) {
+    suspend fun testEmailConfig(context: Context): String = testEmailConfigWithParams(
+        context = context,
+        gmailAddress = null,
+        gmailPassword = null,
+        recipientEmail = null
+    )
+
+    suspend fun testEmailConfigWithParams(
+        context: Context,
+        gmailAddress: String?,
+        gmailPassword: String?,
+        recipientEmail: String?
+    ): String = withContext(Dispatchers.IO) {
         val appContext = context.applicationContext
         val prefs = EncryptedPrefsFactory.get(appContext)
 
-        val gmail = prefs.getString(PreferenceKeys.GMAIL_ADDRESS, "") ?: ""
-        val pass = prefs.getString(PreferenceKeys.GMAIL_PASSWORD, "")?.trim() ?: ""
-        val dest = prefs.getString(PreferenceKeys.RECIPIENT_EMAIL, "") ?: ""
+        val gmail = gmailAddress ?: prefs.getString(PreferenceKeys.GMAIL_ADDRESS, "") ?: ""
+        val pass = gmailPassword?.takeIf { it.isNotEmpty() } ?: prefs.getString(PreferenceKeys.GMAIL_PASSWORD, "")?.trim() ?: ""
+        val dest = recipientEmail ?: prefs.getString(PreferenceKeys.RECIPIENT_EMAIL, "") ?: ""
 
         if (gmail.isEmpty() || pass.isEmpty() || dest.isEmpty()) {
             return@withContext appContext.getString(R.string.email_test_result_config_error)

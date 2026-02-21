@@ -1,11 +1,13 @@
 package com.grevlingappen.data
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.edit
 import com.grevlingappen.R
 import com.grevlingappen.domain.models.ForwardingState
+import com.grevlingappen.services.NotificationMonitorService
 import com.grevlingappen.utils.EncryptedPrefsFactory
 import com.grevlingappen.utils.Logger
 import com.grevlingappen.utils.PermissionsHelper
@@ -136,14 +138,24 @@ class PreferencesRepository private constructor(context: Context) {
 
     fun getMonitoredApps(): Set<String> = prefs.getStringSet(PreferenceKeys.MONITORED_APPS, emptySet()) ?: emptySet()
 
-    fun setMonitoredApps(packageNames: Set<String>) {
+    fun setMonitoredApps(packageNames: Set<String>, context: Context? = null) {
         prefs.edit { putStringSet(PreferenceKeys.MONITORED_APPS, packageNames) }
+
+        context?.let { ctx ->
+            try {
+                val intent = Intent(ctx, NotificationMonitorService::class.java)
+                ctx.stopService(intent)
+                ctx.startService(intent)
+            } catch (e: Exception) {
+                Logger.d(TAG, "Service restart skipped: ${e.message}")
+            }
+        }
     }
 
-    fun toggleApp(packageName: String) {
+    fun toggleApp(packageName: String, context: Context? = null) {
         val currentApps = getMonitoredApps().toMutableSet()
         if (currentApps.contains(packageName)) currentApps.remove(packageName) else currentApps.add(packageName)
-        setMonitoredApps(currentApps)
+        setMonitoredApps(currentApps, context)
     }
 
     /**
