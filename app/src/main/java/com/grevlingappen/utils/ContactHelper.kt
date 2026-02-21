@@ -1,5 +1,6 @@
 package com.grevlingappen.utils
 
+import com.grevlingappen.R
 import android.content.Context
 import android.provider.ContactsContract
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +39,7 @@ object ContactHelper {
         try {
             val uri = ContactsContract.PhoneLookup.CONTENT_FILTER_URI
                 .buildUpon()
-                .appendPath(phoneNumber)
+                .appendPath(normalized)
                 .build()
 
             val projection = arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME)
@@ -69,7 +70,7 @@ object ContactHelper {
      * Formaterer avsender som "Navn (Nummer)" eller bare "Nummer" (suspend-funksjon).
      */
     suspend fun formatSender(context: Context, phoneNumber: String?): String {
-        if (phoneNumber.isNullOrBlank()) return "Ukjent nummer"
+        if (phoneNumber.isNullOrBlank()) return context.getString(R.string.unknown_number)
 
         val contactName = getContactName(context, phoneNumber)
         return if (contactName != null) {

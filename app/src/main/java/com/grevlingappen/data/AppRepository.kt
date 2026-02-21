@@ -31,7 +31,7 @@ class AppRepository(context: Context) {
                 packageManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(0))
                     .mapNotNull { info ->
                         try {
-                            val appInfo = info.applicationInfo
+                            val appInfo = info.applicationInfo ?: return@mapNotNull null
                             if (packageManager.getLaunchIntentForPackage(appInfo.packageName) != null) {
                                 AppInfo(
                                     packageName = appInfo.packageName,

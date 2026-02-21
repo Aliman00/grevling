@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 
 // ============================================================================
 // GREVLING BUTTON - Standard knapp brukt i hele appen
@@ -40,7 +41,7 @@ fun GrevlingButton(
         contentPadding = contentPadding
     ) {
         Text(
-            text = text.uppercase(),
+            text = text.uppercase(Locale.ROOT),
             style = MaterialTheme.typography.labelLarge
         )
     }

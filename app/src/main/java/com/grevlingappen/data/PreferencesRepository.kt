@@ -2,6 +2,7 @@ package com.grevlingappen.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.edit
 import com.grevlingappen.R
 import com.grevlingappen.domain.models.ForwardingState
@@ -46,7 +47,7 @@ class PreferencesRepository private constructor(context: Context) {
     }
 
     // Eget scope for repository-oppgaver (lever så lenge appen lever)
-    private val repositoryScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val repositoryScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private val _state = MutableStateFlow(ForwardingState())
     val state: StateFlow<ForwardingState> = _state.asStateFlow()
@@ -69,6 +70,7 @@ class PreferencesRepository private constructor(context: Context) {
      * Singletonen lever hele appens levetid og ryddes opp av OS ved prosess-død.
      * Beholdes kun for testing og eventuell manuell opprydding.
      */
+    @VisibleForTesting
     fun onDestroy() {
         repositoryScope.cancel()
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)

@@ -20,6 +20,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!-- Custom permission for widget toggle actions -->
+    <permission
+        android:name="com.grevlingappen.permission.WIDGET_TOGGLE"
+        android:protectionLevel="signature" />
+
     <!-- Pakkesynlighet for app-velger (Android 11+) -->
     <queries>
         <intent>
@@ -71,7 +76,8 @@
         <!-- Widgets -->
         <receiver
             android:name=".widgets.ForwardingWidget"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.grevlingappen.permission.WIDGET_TOGGLE">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.grevlingappen.ACTION_TOGGLE_FORWARDING" />
@@ -83,7 +89,8 @@
 
         <receiver
             android:name=".widgets.ForwardingWidgetMini"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.grevlingappen.permission.WIDGET_TOGGLE">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.grevlingappen.ACTION_TOGGLE_MINI" />
@@ -95,7 +102,8 @@
 
         <receiver
             android:name=".widgets.StatsWidget"
-            android:exported="true">
+            android:exported="true"
+            android:permission="com.grevlingappen.permission.WIDGET_TOGGLE">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.grevlingappen.ACTION_TOGGLE_STATS" />

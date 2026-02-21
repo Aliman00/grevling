@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 /**
  * SmsReceiver - Fanger innkommende SMS og videresender dem asynkront.
@@ -52,20 +53,17 @@ class SmsReceiver : BroadcastReceiver() {
         // Opprett ny scope PER SMS-hendelse - ikke i companion object
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
             try {
-                val fullMessage = messages.mapNotNull { it.messageBody }.joinToString("")
-                if (fullMessage.isBlank()) return@launch
+                withTimeout(9_000L) {  // Holder seg innenfor goAsync()-grensen på 10s
+                    val fullMessage = messages.mapNotNull { it.messageBody }.joinToString("")
+                    if (fullMessage.isBlank()) return@withTimeout
 
-                val sender = ContactHelper.formatSender(appContext, phoneNumber)
-                val subject = appContext.getString(R.string.email_sms_subject, sender)
-                val body = appContext.getString(R.string.email_sms_body, fullMessage)
-                
-                // Bruk WorkManager for garantert levering (retry, backoff, nettverk)
-                EmailSender.enqueueEmail(appContext, subject, body)
-                Logger.i(TAG, "SMS lagt i kø for videresending")
-
-                ForwardingStats.recordSmsForwarded(appContext)
-                AutoReplyHelper.sendSmsAutoReply(appContext, phoneNumber)
-
+                    val sender = ContactHelper.formatSender(appContext, phoneNumber)
+                    val subject = appContext.getString(R.string.email_sms_subject, sender)
+                    val body = appContext.getString(R.string.email_sms_body, fullMessage)
+                    EmailSender.enqueueEmail(appContext, subject, body)
+                    ForwardingStats.recordSmsForwarded(appContext)
+                    AutoReplyHelper.sendSmsAutoReply(appContext, phoneNumber)
+                }
             } catch (e: Exception) {
                 Logger.e(TAG, "Feil ved prosessering av SMS", e)
             } finally {

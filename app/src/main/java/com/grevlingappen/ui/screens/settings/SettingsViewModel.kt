@@ -1,6 +1,7 @@
 package com.grevlingappen.ui.screens.settings
 
 import android.app.Application
+import android.content.Intent
 import android.util.Patterns
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +14,7 @@ import com.grevlingappen.utils.setupDebounceSave
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
@@ -35,6 +37,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val recipientEmailInput = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
     private val gmailAddressInput = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
     private val gmailPasswordInput = MutableSharedFlow<String>(replay = 0, extraBufferCapacity = 1)
+
+    private val _navigationEvent = MutableSharedFlow<Intent>(extraBufferCapacity = 1)
+    val navigationEvent = _navigationEvent.asSharedFlow()
+
+    private var pendingGmailPassword: String = ""
 
     init {
         loadSettings()
@@ -75,7 +82,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun updateGmailPassword(password: String) {
-        _uiState.value = _uiState.value.copy(gmailPassword = password)
         gmailPasswordInput.tryEmit(password)
     }
 
@@ -140,21 +146,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun requestIgnoreBatteryOptimizations() {
-        try {
-            val intent = PermissionsHelper.getBatteryOptimizationIntent(getApplication())
-            getApplication<Application>().startActivity(intent)
-        } catch (e: Exception) {
-            Logger.e(TAG, "Kunne ikke åpne batteri-innstillinger", e)
-        }
+        val intent = PermissionsHelper.getBatteryOptimizationIntent(getApplication())
+        _navigationEvent.tryEmit(intent)
     }
 
     fun openNotificationSettings() {
-        try {
-            val intent = PermissionsHelper.getNotificationSettingsIntent()
-            getApplication<Application>().startActivity(intent)
-        } catch (e: Exception) {
-            Logger.e(TAG, "Kunne ikke åpne varsel-innstillinger", e)
-        }
+        val intent = PermissionsHelper.getNotificationSettingsIntent()
+        _navigationEvent.tryEmit(intent)
     }
 }
 
@@ -164,7 +162,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 data class SettingsUiState(
     val recipientEmail: String = "",
     val gmailAddress: String = "",
-    val gmailPassword: String = "",
     val hasGmailPassword: Boolean = false,
     val isSendingTestEmail: Boolean = false,
     val testEmailResultRes: Int = 0,

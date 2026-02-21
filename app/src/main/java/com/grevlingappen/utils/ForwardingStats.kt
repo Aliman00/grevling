@@ -90,10 +90,14 @@ object ForwardingStats {
         }
     }
 
-    /** Hent totalt antall hendelser i dag (suspend-funksjon). */
-    suspend fun getTotalCountToday(context: Context): Int = withContext(Dispatchers.IO) {
-        getSmsCountToday(context) + getCallsCountToday(context)
+/** Hent totalt antall hendelser i dag (suspend-funksjon). */
+suspend fun getTotalCountToday(context: Context): Int = withContext(Dispatchers.IO) {
+    synchronized(lock) {
+        resetIfNewDayInternal(context)
+        getPrefs(context).getInt(KEY_SMS_COUNT_TODAY, 0) +
+        getPrefs(context).getInt(KEY_CALLS_COUNT_TODAY, 0)
     }
+}
 
     /** Hent tidspunkt for siste videresending som lesbar tekst (suspend-funksjon). */
     suspend fun getLastForwardedTimeAgo(context: Context): String = withContext(Dispatchers.IO) {

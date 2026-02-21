@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -69,6 +70,8 @@ fun SettingsScreen(
     val showPermissionRationaleDialog = remember { mutableStateOf(false) }
     val showNotificationRationaleDialog = remember { mutableStateOf(false) }
 
+    var passwordInput by remember { mutableStateOf("") }
+
     // ==================================================================
     // SNACKBAR - Vis testresultat som popup
     // ==================================================================
@@ -82,6 +85,12 @@ fun SettingsScreen(
         if (testResultMessage.isNotEmpty()) {
             snackbarHostState.showSnackbar(testResultMessage)
             viewModel.clearTestResult()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { intent ->
+            context.startActivity(intent)
         }
     }
 
@@ -295,12 +304,12 @@ fun SettingsScreen(
 
                 // Gmail Password
                 TextField(
-                    value = uiState.gmailPassword,
-                    onValueChange = { viewModel.updateGmailPassword(it) },
+                    value = passwordInput,
+                    onValueChange = { passwordInput = it; viewModel.updateGmailPassword(it) },
                     label = { Text(stringResource(R.string.gmail_password_label)) },
                     placeholder = {
                         Text(
-                            if (uiState.hasGmailPassword && uiState.gmailPassword.isEmpty()) "••••••••••••••••"
+                            if (uiState.hasGmailPassword && passwordInput.isEmpty()) "••••••••••••••••"
                             else stringResource(R.string.gmail_password_hint)
                         )
                     },

@@ -53,9 +53,19 @@ class NotificationMonitorService : NotificationListenerService() {
         LinkedHashSet<String>()
     )
 
+    @Volatile
+    private var cachedMonitoredApps: Set<String> = emptySet()
+
     override fun onCreate() {
         super.onCreate()
         prefsRepo = PreferencesRepository.getInstance(applicationContext)
+        
+        scope.launch {
+            prefsRepo.state.collect {
+                cachedMonitoredApps = prefsRepo.getMonitoredApps()
+            }
+        }
+        
         Logger.i(TAG, "Tjeneste startet")
     }
 
@@ -168,7 +178,6 @@ class NotificationMonitorService : NotificationListenerService() {
         }
     }
 
-    // FIX #5: Slå sammen duplikat CallLog-spørringer til én funksjon
     private data class MissedCallInfo(
         val number: String,
         val time: Long
@@ -195,7 +204,6 @@ class NotificationMonitorService : NotificationListenerService() {
 
     // Fjernet duplikatfunksjonene - bruk getLastMissedCall() i stedet
 
-    // FIX #4 & #8: cleanupOldData med synchronized wrappers
     private fun cleanupOldData() {
         val now = System.currentTimeMillis()
         
@@ -228,11 +236,8 @@ class NotificationMonitorService : NotificationListenerService() {
         return (now - time) < RECENT_CALL_THRESHOLD_MS
     }
 
-    private fun isMonitoredApp(pkg: String): Boolean {
-        return prefsRepo.getMonitoredApps().contains(pkg)
-    }
+    private fun isMonitoredApp(pkg: String): Boolean = cachedMonitoredApps.contains(pkg)
 
-    // FIX #9: sendCallEmail som suspend-funksjon
     private suspend fun sendCallEmail(number: String) {
         // Kjør direkte i suspend-konteksten
         val sender = ContactHelper.formatSender(this@NotificationMonitorService, number)

@@ -5,6 +5,7 @@
     <!-- ================================================================ -->
     <string name="app_name">Grevling</string>
     <string name="app_header_title">Grevling Appen</string>
+    <string name="app_display_name">Grevling Appen</string>
 
     <!-- ================================================================ -->
     <!-- HOME FRAGMENT - Hovedskjerm                                      -->
@@ -132,9 +133,9 @@
     <string name="email_sms_subject">📱 Ny SMS fra %s</string>
     <string name="email_sms_body">Melding: %s</string>
     <string name="email_call_subject">📞 Tapt anrop fra %s</string>
-    <string name="email_call_body">Nummer: %s\nTidspunkt: %s</string>
+    <string name="email_call_body">Nummer: %1$s\nTidspunkt: %2$s</string>
     <string name="email_notif_subject">📱 %s varsel</string>
-    <string name="email_notif_body">App: %s\nEmne: %s\nMelding: %s\n\nTidspunkt: %s</string>
+    <string name="email_notif_body">App: %1$s\nEmne: %2$s\nMelding: %3$s\n\nTidspunkt: %4$s</string>
     
     <string name="email_test_subject">Test Email - %s</string>
     <string name="email_test_body_title">Test Email</string>
@@ -163,4 +164,5 @@
     <string name="status_circle_active_label">AKTIVERT</string>
     <string name="status_circle_paused_label">PAUSET</string>
     <string name="status_circle_warning_label">VARSEL</string>
+    <string name="unknown_number">Ukjent nummer</string>
 </resources>

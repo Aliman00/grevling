@@ -4,6 +4,7 @@ import android.content.Context
 import com.grevlingappen.R
 import com.grevlingappen.data.PreferenceKeys
 import com.grevlingappen.services.EmailWorker
+import androidx.annotation.VisibleForTesting
 import androidx.work.BackoffPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -14,14 +15,14 @@ import kotlinx.coroutines.withContext
 import java.util.LinkedList
 import java.util.Properties
 import java.util.concurrent.TimeUnit
-import javax.mail.Authenticator
-import javax.mail.Message
-import javax.mail.PasswordAuthentication
-import javax.mail.Session
-import javax.mail.Transport
-import javax.mail.internet.AddressException
-import javax.mail.internet.InternetAddress
-import javax.mail.internet.MimeMessage
+import jakarta.mail.Authenticator
+import jakarta.mail.Message
+import jakarta.mail.PasswordAuthentication
+import jakarta.mail.Session
+import jakarta.mail.Transport
+import jakarta.mail.internet.AddressException
+import jakarta.mail.internet.InternetAddress
+import jakarta.mail.internet.MimeMessage
 
 /**
  * EmailSender - Håndterer sending av e-post via Gmail SMTP.
@@ -32,8 +33,7 @@ object EmailSender {
     private const val SMTP_HOST = "smtp.gmail.com"
     private const val SMTP_PORT = "587"
     private const val SMTP_TIMEOUT = "15000"
-    private const val EMAIL_DISPLAY_NAME = "Grevling Appen"
-    
+
     private const val MAX_EMAILS_PER_MINUTE = 10
     private val sentTimestamps = LinkedList<Long>()
 
@@ -54,6 +54,11 @@ object EmailSender {
         if (sentTimestamps.isNotEmpty()) {
             sentTimestamps.removeLast()
         }
+    }
+
+    @VisibleForTesting
+    fun resetRateLimitForTesting() {
+        synchronized(this) { sentTimestamps.clear() }
     }
 
     fun enqueueEmail(context: Context, subject: String, body: String) {
@@ -105,7 +110,7 @@ object EmailSender {
             val footer = appContext.getString(R.string.email_footer_text)
             val htmlBody = buildHtmlBody(safeSub, body, footer)
             
-            val message = createMimeMessage(session, gmail, dest, safeSub, htmlBody)
+            val message = createMimeMessage(session, gmail, dest, appContext.getString(R.string.app_display_name), safeSub, htmlBody)
             Transport.send(message)
             Logger.d(TAG, "E-post sendt: $safeSub")
             true
@@ -137,13 +142,13 @@ object EmailSender {
             InternetAddress(dest).validate()
 
             val session = createSession(gmail, pass)
-            val sub = appContext.getString(R.string.email_test_subject, EMAIL_DISPLAY_NAME)
+            val sub = appContext.getString(R.string.email_test_subject, appContext.getString(R.string.app_display_name))
             val html = "<h3>${appContext.getString(R.string.email_test_body_title)}</h3>" +
                        "<p>${appContext.getString(R.string.email_test_body_content)}</p>"
             
-            Transport.send(createMimeMessage(session, gmail, dest, sub, html))
+            Transport.send(createMimeMessage(session, gmail, dest, appContext.getString(R.string.app_display_name), sub, html))
             appContext.getString(R.string.email_test_result_success)
-        } catch (e: javax.mail.AuthenticationFailedException) {
+        } catch (e: jakarta.mail.AuthenticationFailedException) {
             releaseLastSlot()
             Logger.w(TAG, "Autentisering feilet", e)
             appContext.getString(R.string.email_test_result_auth_error)
@@ -175,9 +180,9 @@ object EmailSender {
         })
     }
 
-    private fun createMimeMessage(session: Session, from: String, to: String, sub: String, html: String): MimeMessage {
+    private fun createMimeMessage(session: Session, from: String, to: String, displayName: String, sub: String, html: String): MimeMessage {
         return MimeMessage(session).apply {
-            setFrom(InternetAddress(from, EMAIL_DISPLAY_NAME))
+            setFrom(InternetAddress(from, displayName))
             setRecipient(Message.RecipientType.TO, InternetAddress(to))
             setSubject(sub, "UTF-8")
             setContent(html, "text/html; charset=UTF-8")

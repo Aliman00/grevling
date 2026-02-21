@@ -43,6 +43,10 @@ object EncryptedPrefsFactory {
         } catch (e: Exception) {
             Logger.e(TAG, "Kryptert lagring feilet, prøver reset", e)
             
+            // Sett flagg FØR vi sletter, så UI kan vise forklaring ved neste oppstart
+            context.getSharedPreferences("app_flags", Context.MODE_PRIVATE)
+                .edit().putBoolean("prefs_were_reset", true).apply()
+            
             // Slett korrupt fil via systemets API
             context.deleteSharedPreferences(PreferenceKeys.PREFS_NAME)
             
@@ -56,12 +60,14 @@ object EncryptedPrefsFactory {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun createMasterKey(context: Context): MasterKey {
         return MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
     }
 
+    @Suppress("DEPRECATION")
     private fun createEncryptedPrefs(context: Context, masterKey: MasterKey): SharedPreferences {
         return EncryptedSharedPreferences.create(
             context,
