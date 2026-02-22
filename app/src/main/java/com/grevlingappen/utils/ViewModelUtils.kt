@@ -21,6 +21,13 @@ fun ViewModel.setupDebounceSaveWithFlush(
 ): () -> Unit {
     var pendingValue: String? = null
     
+    // Collect immediately to update pendingValue
+    viewModelScope.launch {
+        flow.collect { value ->
+            pendingValue = value
+        }
+    }
+    
     val flush: () -> Unit = {
         pendingValue?.let { value ->
             onStatusChange(SaveStatus.SAVING)
