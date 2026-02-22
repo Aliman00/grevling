@@ -34,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -42,6 +41,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.grevlingappen.R
 import com.grevlingappen.ui.components.GrevlingButton
@@ -370,35 +370,30 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Permissions Status
-                val statusText = buildString {
-                    if (uiState.hasNotificationAccess) {
-                        append(stringResource(R.string.permissions_status_notification_ok) + "\n")
-                    } else {
-                        append(stringResource(R.string.permissions_status_notification_missing) + "\n")
-                    }
-
-                    if (uiState.hasAllPermissions) {
-                        append(stringResource(R.string.permissions_status_sms_ok) + "\n")
-                    } else {
-                        append(stringResource(R.string.permissions_status_sms_missing) + "\n")
-                    }
-
-                    if (uiState.isIgnoringBatteryOptimizations) {
-                        append(stringResource(R.string.permissions_status_battery_ok))
-                    } else {
-                        append(stringResource(R.string.permissions_status_battery_missing))
-                    }
-                }
-
+                // Permissions Status - Individual colors for each line
                 Text(
-                    text = statusText,
-                    modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (uiState.hasNotificationAccess && uiState.hasAllPermissions && uiState.isIgnoringBatteryOptimizations)
-                        StatusSuccess
-                    else
-                        StatusWarning
+                    text = stringResource(
+                        if (uiState.hasNotificationAccess) R.string.permissions_status_notification_ok
+                        else R.string.permissions_status_notification_missing
+                    ),
+                    color = if (uiState.hasNotificationAccess) StatusSuccess else StatusWarning,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = stringResource(
+                        if (uiState.hasAllPermissions) R.string.permissions_status_sms_ok
+                        else R.string.permissions_status_sms_missing
+                    ),
+                    color = if (uiState.hasAllPermissions) StatusSuccess else StatusWarning,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = stringResource(
+                        if (uiState.isIgnoringBatteryOptimizations) R.string.permissions_status_battery_ok
+                        else R.string.permissions_status_battery_missing
+                    ),
+                    color = if (uiState.isIgnoringBatteryOptimizations) StatusSuccess else StatusWarning,
+                    style = MaterialTheme.typography.bodyMedium
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

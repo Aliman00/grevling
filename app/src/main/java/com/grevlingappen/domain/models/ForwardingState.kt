@@ -23,10 +23,7 @@ data class ForwardingState(
     val callMessage: String = "",
 
     // UI feedback
-    val statusMessage: String = "",
-    val saveStatusUnified: SaveStatus = SaveStatus.NONE,
-    val saveStatusSms: SaveStatus = SaveStatus.NONE,
-    val saveStatusCall: SaveStatus = SaveStatus.NONE
+    val statusMessage: String = ""
 ) {
     /** Kan videresending aktiveres? Krever både konfigurasjon og tilgang. */
     val canActivate: Boolean

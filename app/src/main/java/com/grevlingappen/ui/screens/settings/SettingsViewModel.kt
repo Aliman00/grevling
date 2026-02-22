@@ -88,7 +88,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun updateGmailPassword(password: String) {
-        _uiState.value = _uiState.value.copy(gmailPassword = password)
+        pendingGmailPassword = password
         gmailPasswordInput.tryEmit(password)
     }
 
@@ -98,8 +98,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun testEmail() {
         val state = _uiState.value
 
+        val passwordToUse = pendingGmailPassword.ifEmpty { repository.getGmailPassword() }
+        
         // Validering - sjekk både lagret passord og direkte input
-        val hasPassword = state.hasGmailPassword || !state.gmailPassword.isNullOrEmpty()
+        val hasPassword = state.hasGmailPassword || passwordToUse.isNotEmpty()
         if (state.recipientEmail.isEmpty() || state.gmailAddress.isEmpty() || !hasPassword) {
             _uiState.value = state.copy(testEmailResultRes = R.string.test_email_error_empty)
             return
@@ -126,7 +128,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             val result = EmailSender.testEmailConfigWithParams(
                 context = getApplication(),
                 gmailAddress = state.gmailAddress,
-                gmailPassword = state.gmailPassword,
+                gmailPassword = passwordToUse,
                 recipientEmail = state.recipientEmail
             )
             _uiState.value = _uiState.value.copy(
@@ -175,7 +177,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 data class SettingsUiState(
     val recipientEmail: String = "",
     val gmailAddress: String = "",
-    val gmailPassword: String? = null,
     val hasGmailPassword: Boolean = false,
     val isSendingTestEmail: Boolean = false,
     val testEmailResultRes: Int = 0,

@@ -1,6 +1,8 @@
 package com.grevlingappen.ui.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -113,38 +115,50 @@ fun MainScreen() {
             )
         },
         bottomBar = {
-            NavigationBar {
-                // Loop gjennom alle bottom nav items
-                bottomNavItems.forEach { item ->
-                    // Sjekk om denne screen er aktiv
-                    val isSelected = currentDestination?.hierarchy?.any {
-                        it.route == item.screen.route
-                    } == true
+            Column {
+                Text(
+                    text = stringResource(R.string.developed_by),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .padding(vertical = 5.dp)
+                )
+                NavigationBar {
+                    // Loop gjennom alle bottom nav items
+                    bottomNavItems.forEach { item ->
+                        // Sjekk om denne screen er aktiv
+                        val isSelected = currentDestination?.hierarchy?.any {
+                            it.route == item.screen.route
+                        } == true
 
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = item.icon,
-                                contentDescription = item.label
-                            )
-                        },
-                        label = { Text(item.label) },
-                        selected = isSelected,
-                        onClick = {
-                            // Naviger til selected screen
-                            navController.navigate(item.screen.route) {
-                                // Unngå å bygge opp stor back-stack:
-                                // Alltid pop til start når vi bytter tab
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.label
+                                )
+                            },
+                            label = { Text(item.label) },
+                            selected = isSelected,
+                            onClick = {
+                                // Naviger til selected screen
+                                navController.navigate(item.screen.route) {
+                                    // Unngå å bygge opp stor back-stack:
+                                    // Alltid pop til start når vi bytter tab
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    // Unngå multiple copies av samme destination
+                                    launchSingleTop = true
+                                    // Restore state når vi går tilbake til en tab
+                                    restoreState = true
                                 }
-                                // Unngå multiple copies av samme destination
-                                launchSingleTop = true
-                                // Restore state når vi går tilbake til en tab
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

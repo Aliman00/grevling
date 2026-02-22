@@ -19,10 +19,8 @@
 # Jakarta Mail (formerly JavaMail) bruker reflection for å laste klasser dynamisk
 # Hvis disse fjernes, vil e-post-sending feile i release-bygg
 
-# Ignorer warnings for manglende Jakarta AWT/Security klasser
+# Ignorer warnings for manglende Jakarta klasser
 # (disse finnes ikke på Android, men Jakarta Mail refererer til dem)
--dontwarn jakarta.awt.**
--dontwarn jakarta.security.**
 -dontwarn jakarta.activation.**
 
 # Behold alle Angus Mail klasser (formerly JavaMail)

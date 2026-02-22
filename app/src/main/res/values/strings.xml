@@ -27,6 +27,8 @@
     <string name="saving_indicator">Lagres...</string>
     <string name="auto_reply_sms_label">Auto-svar for SMS</string>
     <string name="auto_reply_call_label">Auto-svar for tapt anrop</string>
+    <string name="save_messages_button">Lagre meldinger</string>
+    <string name="message_empty_hint">Tom melding gjenopprettes til standardmelding ved lagring</string>
 
     <!-- Default meldinger -->
     <string name="default_unified_message">Hei! Jeg kan ikke svare nå. Jeg får varsler på email, så jeg kontakter deg snart.</string>
@@ -83,11 +85,13 @@
     <string name="permissions_status_battery_ok">✓ Bakgrunnskjøring: OK</string>
     <string name="permissions_status_battery_missing">✗ Bakgrunnskjøring: Begrenset (Anbefales aktivert)</string>
     <string name="permissions_status_sms">SMS/Anrop tillatelser: %d/3</string>
-    <string name="restricted_settings_button">Tillatelser avvist?</string>
+<string name="restricted_settings_button">Tillatelser avvist?</string>
     <string name="restricted_settings_help_link">❓ Tillatelser avvist automatisk?</string>
     <string name="restricted_settings_title">Begrensede innstillinger (Android 13+)</string>
-    <string name="restricted_settings_guide">Hvis tillatelser blir avvist automatisk, eller du ikke får skrudd på varseltilgang, må du aktivere \"Tillat begrensede innstillinger\":\n\n1. Åpne Innstillinger\n2. Gå til Apper → Grevling\n3. Trykk på tre prikker (⋮) øverst\n4. Velg \"Tillat begrensede innstillinger\"\n5. Bekreft med enhetens PIN/mønster\n6. Gå tilbake til denne appen og prøv igjen.\n\nDette er en Android-sikkerhetsmekanisme for apper som ikke er installert fra Google Play Store.</string>
+    <string name="restricted_settings_guide">Hvis tillatelser blir avvist automatisk, eller du ikke får skrudd på varseltilgang, må du aktivere "Tillat begrensede innstillinger":\n\n1. Åpne Innstillinger\n2. Gå til Apper → Grevling\n3. Trykk på tre prikker (⋮) øverst\n4. Velg "Tillat begrensede innstillinger"\n5. Bekreft med enhetens PIN/mønster\n6. Gå tilbake til denne appen og prøv igjen.\n\nDette er en Android-sikkerhetsmekanisme for apper som ikke er installert fra Google Play Store.</string>
     <string name="open_app_settings">Åpne app-innstillinger</string>
+    <string name="dialog_prefs_reset_title">Innstillinger tilbakestilt</string>
+    <string name="dialog_prefs_reset_message">Sikker lagring måtte tilbakestilles på grunn av en feil. Vennligst konfigurer appen på nytt.</string>
 
     <!-- ================================================================ -->
     <!-- MAIN ACTIVITY                                                    -->
@@ -100,6 +104,7 @@
     <string name="nav_home">Hjem</string>
     <string name="nav_apps">Apper</string>
     <string name="nav_settings">Innstillinger</string>
+    <string name="developed_by">Utviklet av Almin Colakovic</string>
 
     <!-- ================================================================ -->
     <!-- WIDGET                                                           -->

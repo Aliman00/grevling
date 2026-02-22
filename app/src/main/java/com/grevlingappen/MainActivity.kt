@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -19,26 +20,30 @@ import com.grevlingappen.ui.theme.GrevlingTheme
  */
 class MainActivity : ComponentActivity() {
 
+    companion object {
+        private const val PREFS_FLAGS = "app_flags"
+        private const val KEY_PREFS_RESET = "prefs_were_reset"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // Sjekk om prefs ble reset tidligere
-        val prefsWereReset = getSharedPreferences("app_flags", Context.MODE_PRIVATE)
-            .getBoolean("prefs_were_reset", false)
+        val prefsWereReset = getSharedPreferences(PREFS_FLAGS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_PREFS_RESET, false)
 
         if (prefsWereReset) {
             // Clear the flag
-            getSharedPreferences("app_flags", Context.MODE_PRIVATE)
-                .edit().putBoolean("prefs_were_reset", false).apply()
+            getSharedPreferences(PREFS_FLAGS, Context.MODE_PRIVATE)
+                .edit().putBoolean(KEY_PREFS_RESET, false).apply()
 
             // Show dialog - do this BEFORE setContent
-            runOnUiThread {
-                AlertDialog.Builder(this)
-                    .setTitle("Innstillinger tilbakestilt")
-                    .setMessage("Sikker lagring måtte tilbakestilles på grunn av en feil. Vennligst konfigurer appen på nytt.")
-                    .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-                    .show()
-            }
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.dialog_prefs_reset_title))
+                .setMessage(getString(R.string.dialog_prefs_reset_message))
+                .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                .show()
         }
 
         setContent {

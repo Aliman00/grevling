@@ -88,7 +88,7 @@ class AppsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleApp(app: AppInfo) {
         // Lagre til disk
-        repository.toggleApp(app.packageName, getApplication<Application>())
+        repository.toggleApp(app.packageName)
         
         // Oppdater i minnet umiddelbart for bedre ytelse (optimistic update)
         val updatedAllApps = _state.value.allApps.map {

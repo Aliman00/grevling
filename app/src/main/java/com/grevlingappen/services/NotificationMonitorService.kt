@@ -59,6 +59,12 @@ class NotificationMonitorService : NotificationListenerService() {
     override fun onCreate() {
         super.onCreate()
         prefsRepo = PreferencesRepository.getInstance(applicationContext)
+        Logger.i(TAG, "Tjeneste startet")
+    }
+
+    override fun onListenerConnected() {
+        super.onListenerConnected()
+        cachedMonitoredApps = prefsRepo.getMonitoredApps()
         
         scope.launch {
             prefsRepo.state.collect {
@@ -66,7 +72,7 @@ class NotificationMonitorService : NotificationListenerService() {
             }
         }
         
-        Logger.i(TAG, "Tjeneste startet")
+        Logger.i(TAG, "Listener koblet til med ${cachedMonitoredApps.size} overvåkede apper")
     }
 
     override fun onDestroy() {
@@ -87,7 +93,6 @@ class NotificationMonitorService : NotificationListenerService() {
 
         when (cat) {
             Notification.CATEGORY_CALL -> activeCalls[pkg] = time
-            Notification.CATEGORY_MISSED_CALL -> handleMissedCall(time)
             else -> handleAppNotification(pkg, notification, time)
         }
     }
@@ -127,33 +132,6 @@ class NotificationMonitorService : NotificationListenerService() {
             cleanupOldData()
         }
         sendCallEmail(missCall.number)
-    }
-
-    private fun handleMissedCall(postTime: Long) {
-        if (processedMissedCalls.contains(postTime)) return
-        processedMissedCalls.add(postTime)
-        // Begrens minnebruk
-        if (processedMissedCalls.size > MAX_PROCESSED_MISSED_CALLS) {
-            cleanupOldData()
-        }
-
-        scope.launch {
-            // Vent litt for å la systemet skrive til CallLog
-            kotlinx.coroutines.delay(RETRY_DELAY_MS)
-            
-            var missCall = getLastMissedCall()
-            // Retry en gang hvis vi ikke fant noe ferskt
-            if (missCall == null || missCall.number.isBlank() || !isRecentMissedCall(missCall.time)) {
-                kotlinx.coroutines.delay(CALL_LOG_DELAY_MS)
-                missCall = getLastMissedCall()
-            }
-
-            if (missCall != null && missCall.number.isNotBlank()) {
-                sendCallEmail(missCall.number)
-            } else {
-                Logger.w(TAG, "Kunne ikke hente nummer for tapt anrop")
-            }
-        }
     }
 
     private fun handleAppNotification(pkg: String, notification: Notification, time: Long) {

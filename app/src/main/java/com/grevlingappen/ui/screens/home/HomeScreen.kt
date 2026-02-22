@@ -25,14 +25,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.grevlingappen.R
-import com.grevlingappen.domain.models.SaveStatus
 import com.grevlingappen.ui.components.GrevlingButton
 import com.grevlingappen.ui.components.GrevlingCard
 import com.grevlingappen.ui.components.GrevlingHeader
@@ -213,8 +212,6 @@ fun HomeScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(Modifier.weight(1f))
-                            SaveStatusIndicator(status = state.saveStatusUnified)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         TextField(
@@ -224,6 +221,13 @@ fun HomeScreen(
                             minLines = 3,
                             maxLines = 5
                         )
+                        if (state.unifiedMessage.isBlank()) {
+                            Text(
+                                text = stringResource(R.string.message_empty_hint),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
                     } else {
                         // SEPARATE MESSAGES (forskjellig for SMS og anrop)
 
@@ -240,8 +244,6 @@ fun HomeScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(Modifier.weight(1f))
-                            SaveStatusIndicator(status = state.saveStatusSms)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         TextField(
@@ -251,6 +253,13 @@ fun HomeScreen(
                             minLines = 3,
                             maxLines = 5
                         )
+                        if (state.smsMessage.isBlank()) {
+                            Text(
+                                text = stringResource(R.string.message_empty_hint),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -267,8 +276,6 @@ fun HomeScreen(
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(Modifier.weight(1f))
-                            SaveStatusIndicator(status = state.saveStatusCall)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         TextField(
@@ -278,32 +285,24 @@ fun HomeScreen(
                             minLines = 3,
                             maxLines = 5
                         )
+                        if (state.callMessage.isBlank()) {
+                            Text(
+                                text = stringResource(R.string.message_empty_hint),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                GrevlingButton(
+                    text = stringResource(R.string.save_messages_button),
+                    onClick = { viewModel.saveMessages() },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
-    }
-}
-
-/**
- * Liten indikator som viser lagringsstatus ved siden av en label
- */
-@Composable
-fun SaveStatusIndicator(status: SaveStatus) {
-    val text = when (status) {
-        SaveStatus.SAVING -> stringResource(R.string.saving_indicator)
-        SaveStatus.SAVED -> stringResource(R.string.saved_indicator)
-        SaveStatus.NONE -> ""
-    }
-    
-    if (text.isNotEmpty()) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelSmall,
-            color = if (status == SaveStatus.SAVING) 
-                MaterialTheme.colorScheme.secondary 
-            else 
-                MaterialTheme.colorScheme.primary
-        )
     }
 }
