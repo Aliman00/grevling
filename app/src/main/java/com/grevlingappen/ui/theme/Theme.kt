@@ -47,11 +47,15 @@ fun GrevlingTheme(
     )
 
     // Sett status bar styling (top bar med klokke/batteri)
+    // Status bar får hvit bakgrunn for kontrast mot appens lette bakgrunn
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            // Hvit status bar = bedre kontrast for ikoner
+            window.statusBarColor = android.graphics.Color.WHITE
+            // Bruk mørke ikoner (klokke/batteri) på lys bakgrunn
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
 
