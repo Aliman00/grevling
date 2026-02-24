@@ -38,12 +38,8 @@ object Logger {
         Log.e(tag, message)
     }
 
-    /** Error med unntak: Viser full stacktrace kun i debug. */
+    /** Error med unntak: Vises alltid med stacktrace for å lette feilsøking. */
     fun e(tag: String, message: String, throwable: Throwable) {
-        if (isDebug) {
-            Log.e(tag, message, throwable)
-        } else {
-            Log.e(tag, message)
-        }
+        Log.e(tag, message, throwable)
     }
 }

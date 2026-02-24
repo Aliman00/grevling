@@ -77,6 +77,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun flushGmailAddress() { gmailAddressFlush?.invoke() }
     fun flushGmailPassword() { gmailPasswordFlush?.invoke() }
 
+    fun flushAll() {
+        flushRecipientEmail()
+        flushGmailAddress()
+        flushGmailPassword()
+    }
+
     fun updateRecipientEmail(email: String) {
         _uiState.value = _uiState.value.copy(recipientEmail = email)
         recipientEmailInput.tryEmit(email)

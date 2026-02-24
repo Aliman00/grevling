@@ -96,16 +96,19 @@ fun SettingsScreen(
     }
 
     // ==================================================================
-    // LIFECYCLE - Oppdater permissions når appen gjenopptas
+    // LIFECYCLE - Oppdater permissions når appen gjenopptas, lagre når den pauses
     // ==================================================================
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                viewModel.checkPermissions()
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> viewModel.checkPermissions()
+                Lifecycle.Event.ON_PAUSE -> viewModel.flushAll() // Lagre hvis appen pauses (Hjem-knapp etc)
+                else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
+            viewModel.flushAll() // Lagre når skjermen forlates (navigasjon)
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
