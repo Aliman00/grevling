@@ -61,6 +61,14 @@ object AutoReplyHelper {
             return@withContext
         }
 
+        // Ignorer korte nummer (f.eks. 1881, 2222) for å unngå kostnader eller feil
+        // Norske mobilnummer er 8 siffer. Vi tillater 8 siffer eller mer.
+        val digitsOnly = phoneNumber.filter { it.isDigit() }
+        if (digitsOnly.length < 8) {
+            Logger.w(TAG, "Nummeret er for kort (${digitsOnly.length} siffer), ignorerer auto-svar: $phoneNumber")
+            return@withContext
+        }
+
         val normalized = PhoneNumberUtils.normalizePhoneNumber(phoneNumber)
         val now = System.currentTimeMillis()
         
