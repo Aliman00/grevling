@@ -6,6 +6,8 @@ import androidx.work.WorkerParameters
 import com.grevlingappen.utils.EmailSender
 import com.grevlingappen.utils.Logger
 
+import jakarta.mail.AuthenticationFailedException
+
 /**
  * EmailWorker - Håndterer robust utsending av e-post i bakgrunnen via WorkManager.
  * Garanterer levering selv om appen drepes av systemet.
@@ -29,23 +31,25 @@ class EmailWorker(
         return try {
             Logger.d(TAG, "Starter bakgrunnsutsending av e-post")
             
-            val result = EmailSender.sendEmailNow(applicationContext, subject, body)
-            
-            if (result) {
-                Result.success()
-            } else {
-                // Ved feil (f.eks. nettverk) prøver vi på nytt senere
-                if (runAttemptCount < MAX_RETRIES) {
-                    Logger.w(TAG, "Sending feilet, prøver på nytt (forsøk ${runAttemptCount + 1})")
-                    Result.retry()
-                } else {
-                    Logger.e(TAG, "Maks antall forsøk nådd, dropper e-post")
-                    Result.failure()
-                }
-            }
+            EmailSender.sendEmailNow(applicationContext, subject, body)
+            Result.success()
+
+        } catch (e: AuthenticationFailedException) {
+            Logger.e(TAG, "Autentisering feilet - sjekk passord. Dropper e-post.", e)
+            Result.failure()
+        } catch (e: IllegalArgumentException) {
+            Logger.e(TAG, "Konfigurasjonsfeil: ${e.message}. Dropper e-post.", e)
+            Result.failure()
         } catch (e: Exception) {
-            Logger.e(TAG, "Feil under bakgrunnsutsending", e)
-            Result.retry()
+            Logger.w(TAG, "Feil under sending: ${e.message}")
+            
+            if (runAttemptCount < MAX_RETRIES) {
+                Logger.d(TAG, "Prøver på nytt (forsøk ${runAttemptCount + 1})")
+                Result.retry()
+            } else {
+                Logger.e(TAG, "Maks antall forsøk nådd, gir opp")
+                Result.failure()
+            }
         }
     }
 }

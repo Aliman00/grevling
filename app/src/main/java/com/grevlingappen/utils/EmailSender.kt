@@ -86,7 +86,7 @@ object EmailSender {
         Logger.d(TAG, "E-post lagt i WorkManager-kø: $subject")
     }
 
-    suspend fun sendEmailNow(context: Context, subject: String, body: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun sendEmailNow(context: Context, subject: String, body: String) = withContext(Dispatchers.IO) {
         val appContext = context.applicationContext
         val prefs = EncryptedPrefsFactory.get(appContext)
 
@@ -95,13 +95,11 @@ object EmailSender {
         val dest = prefs.getString(PreferenceKeys.RECIPIENT_EMAIL, "") ?: ""
 
         if (gmail.isEmpty() || pass.isEmpty() || dest.isEmpty()) {
-            Logger.e(TAG, "Mangler e-postkonfigurasjon")
-            return@withContext false
+            throw IllegalArgumentException("Mangler e-postkonfigurasjon")
         }
 
         if (!canSendAndRegister()) {
-            Logger.w(TAG, "Rate-limit nådd, prøver igjen senere")
-            return@withContext false
+            throw IllegalStateException("Rate-limit nådd, prøver igjen senere")
         }
 
         try {
@@ -113,11 +111,10 @@ object EmailSender {
             val message = createMimeMessage(session, gmail, dest, appContext.getString(R.string.app_display_name), safeSub, htmlBody)
             Transport.send(message)
             Logger.d(TAG, "E-post sendt: $safeSub")
-            true
         } catch (e: Exception) {
-            Logger.e(TAG, "Feil ved sending av e-post", e)
+            Logger.e(TAG, "Feil ved sending av e-post: ${e.message}")
             releaseLastSlot()
-            false
+            throw e
         }
     }
 
