@@ -1,6 +1,10 @@
 package com.grevlingappen.services
 
 import android.app.Notification
+import android.database.ContentObserver
+import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.provider.CallLog
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -31,7 +35,6 @@ class NotificationMonitorService : NotificationListenerService() {
         // Magiske tall erstattet med navngitte konstanter
         private const val MAX_PROCESSED_MISSED_CALLS = 500
         private const val MAX_PROCESSED_NOTIFICATIONS = 1000
-        private const val CALL_LOG_DELAY_MS = 2000L
         private const val RETRY_DELAY_MS = 1500L
         private const val RECENT_CALL_THRESHOLD_MS = 30_000L
         
@@ -56,10 +59,33 @@ class NotificationMonitorService : NotificationListenerService() {
     @Volatile
     private var cachedMonitoredApps: Set<String> = emptySet()
 
+    // Lytter på endringer i CallLog (mer pålitelig enn forsinkelse)
+    private val callLogObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            super.onChange(selfChange, uri)
+            // Sjekk bare hvis endringen faktisk gjelder anropsloggen
+            if (uri == null || uri == CallLog.Calls.CONTENT_URI) {
+                scope.launch {
+                    checkForMissedCall()
+                }
+            }
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         prefsRepo = PreferencesRepository.getInstance(applicationContext)
-        Logger.i(TAG, "Tjeneste startet")
+        
+        try {
+            contentResolver.registerContentObserver(
+                CallLog.Calls.CONTENT_URI,
+                true,
+                callLogObserver
+            )
+            Logger.i(TAG, "Tjeneste startet og lytter på anropslogg")
+        } catch (e: Exception) {
+            Logger.e(TAG, "Kunne ikke registrere CallLogObserver", e)
+        }
     }
 
     override fun onListenerConnected() {
@@ -76,6 +102,11 @@ class NotificationMonitorService : NotificationListenerService() {
     }
 
     override fun onDestroy() {
+        try {
+            contentResolver.unregisterContentObserver(callLogObserver)
+        } catch (e: Exception) {
+            Logger.w(TAG, "Feil ved avregistrering av observer", e)
+        }
         scope.cancel()
         super.onDestroy()
         Logger.i(TAG, "Tjeneste stoppet")
@@ -106,21 +137,19 @@ class NotificationMonitorService : NotificationListenerService() {
 
         if (cat == Notification.CATEGORY_CALL && activeCalls.containsKey(pkg)) {
             activeCalls.remove(pkg)
-            scope.launch {
-                checkForMissedCall()
-            }
+            // Vi trenger ikke kalle checkForMissedCall her lenger,
+            // da ContentObserver vil plukke opp endringen i CallLog automatisk.
         }
     }
 
     private suspend fun checkForMissedCall() {
-        // Øk ventetiden for å være sikker på at CallLog er oppdatert
-        kotlinx.coroutines.delay(CALL_LOG_DELAY_MS)
+        // Ingen delay nødvendig lenger takket være ContentObserver
 
         val missCall = getLastMissedCall()
         if (missCall == null || missCall.number.isBlank()) return
 
         if (!isRecentMissedCall(missCall.time)) {
-            Logger.d(TAG, "Siste tapte anrop er ikke nylig nok")
+            // Dette er normalt - observeren trigger ved alle endringer i loggen
             return
         }
 

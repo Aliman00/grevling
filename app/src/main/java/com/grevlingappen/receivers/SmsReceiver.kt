@@ -44,7 +44,8 @@ class SmsReceiver : BroadcastReceiver() {
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
         if (messages.isNullOrEmpty()) return
 
-        val message = messages[0]
+        // Finn første melding som har en gyldig avsender. Fallback til første melding hvis ingen finnes.
+        val message = messages.firstOrNull { !it.displayOriginatingAddress.isNullOrBlank() } ?: messages[0]
         val phoneNumber = message.displayOriginatingAddress ?: return
         
         // Bruk goAsync for å sikre at vi rekker å kjøre logikken
