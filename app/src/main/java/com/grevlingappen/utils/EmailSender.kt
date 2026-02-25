@@ -6,7 +6,10 @@ import com.grevlingappen.data.PreferenceKeys
 import com.grevlingappen.services.EmailWorker
 import androidx.annotation.VisibleForTesting
 import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import androidx.work.workDataOf
@@ -70,11 +73,17 @@ object EmailSender {
             return
         }
 
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
         val workRequest = OneTimeWorkRequestBuilder<EmailWorker>()
             .setInputData(workDataOf(
                 EmailWorker.KEY_SUBJECT to subject,
                 EmailWorker.KEY_BODY to body
             ))
+            .setConstraints(constraints)
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setBackoffCriteria(
                 BackoffPolicy.EXPONENTIAL,
                 WorkRequest.MIN_BACKOFF_MILLIS,
