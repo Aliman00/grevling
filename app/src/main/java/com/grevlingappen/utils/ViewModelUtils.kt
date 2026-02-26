@@ -54,7 +54,7 @@ fun ViewModel.setupDebounceSaveWithFlush(
                 onStatusChange(SaveStatus.SAVING)
                 saveAction(valueToSave)
                 onStatusChange(SaveStatus.SAVED)
-                delayaveStatus.SAV(2000)  // Vis "lagret" i 2 sekunder
+                delay(2000)  // Vis "lagret" i 2 sekunder
                 onStatusChange(SaveStatus.NONE)
             }
         }

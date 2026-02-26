@@ -31,9 +31,7 @@ object PermissionsHelper {
     
     // Systeminnstillinger-nøkkel for aktiverte NotificationListeners
     // Denne strengen er konstant i Android-systemet
-    private companion object {
-        private const val ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners"
-    }
+    private const val ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners"
 
     /**
      * Liste over alle kritiske tillatelser som kreves for at videresending skal fungere.
