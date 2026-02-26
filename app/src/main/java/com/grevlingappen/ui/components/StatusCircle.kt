@@ -38,10 +38,23 @@ import com.grevlingappen.ui.theme.StatusActive
 import com.grevlingappen.ui.theme.StatusPaused
 import com.grevlingappen.ui.theme.StatusWarning
 
-// ============================================================================
-// STATUS CIRCLE - Avansert animert status-indikator
-// ============================================================================
-
+/**
+ * StatusCircle - Avansert animert status-indikator.
+ * 
+ * Viser appens gjeldende tilstand med:
+ * - Pulserende animasjon når aktiv
+ * - Roterende kant-effekt når aktiv
+ * - Farge som indikerer tilstand (grønn/gul/rød)
+ * - Tekst-label i midten
+ * 
+ * Tilstander:
+ * - ACTIVE (grønn): Alt fungerer, videresending er aktiv
+ * - WARNING (gul): Noe mangler (konfigurasjon/tillatelser)
+ * - PAUSED (rød): Videresending er pauset av bruker
+ * 
+ * @param status Gjeldende StatusColor
+ * @param modifier Modifier for tilpasning
+ */
 @Composable
 fun StatusCircle(
     status: StatusColor,
@@ -49,12 +62,10 @@ fun StatusCircle(
 ) {
     val isActive = status == StatusColor.ACTIVE
     
-    // ------------------------------------------------------------------------
-    // ANIMASJONS-KONFIGURASJON
-    // ------------------------------------------------------------------------
+    // Animasjons-konfigurasjon
     val infiniteTransition = rememberInfiniteTransition(label = "super_pulse")
     
-    // Animert fargeskifte (mellom Aktiv/Pauset/Varsel)
+    // Animert fargeskifte basert på tilstand
     val statusColor by animateColorAsState(
         targetValue = when (status) {
             StatusColor.ACTIVE -> StatusActive
@@ -76,10 +87,10 @@ fun StatusCircle(
         label = "scale"
     )
 
-    // 2. Pulserende glød-alpha (KUN når aktiv)
+    // 2. Pulserende glød-effekt (KUN når aktiv)
     val glowAlpha by infiniteTransition.animateFloat(
         initialValue = 0.2f,
-        targetValue = if (isActive) 0.6f else 0.3f, // Fast verdi (0.3) via alpha-mating når ikke aktiv
+        targetValue = if (isActive) 0.6f else 0.3f,
         animationSpec = infiniteRepeatable(
             animation = tween(1500),
             repeatMode = RepeatMode.Reverse
@@ -98,12 +109,9 @@ fun StatusCircle(
         label = "rotation"
     )
     
-    // ------------------------------------------------------------------------
-    // LAYOUT
-    // ------------------------------------------------------------------------
+    // Layout
     Box(
-        modifier = modifier
-            .size(100.dp),
+        modifier = modifier.size(100.dp),
         contentAlignment = Alignment.Center
     ) {
         // Roterende kant-ring (Vises kun når aktiv)
@@ -126,7 +134,7 @@ fun StatusCircle(
             )
         }
 
-        // Selve sirkelen med INTERN glød/dybde
+        // Hovedsirkel med glød
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -141,8 +149,8 @@ fun StatusCircle(
                             )
                         } else {
                             listOf(
-                                statusColor.copy(alpha = 0.15f), // Statisk dyp rød kjerne
-                                statusColor.copy(alpha = 0.05f)  // Nesten gjennomsiktig kant
+                                statusColor.copy(alpha = 0.15f), // Statisk dyp farge
+                                statusColor.copy(alpha = 0.05f)  // Nesten gjennomsiktig
                             )
                         }
                     )

@@ -48,13 +48,43 @@ import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * AppsScreen - Skjerm for å velge hvilke apper som skal overvåkes.
+ * 
+ * Funksjonalitet:
+ * - Viser liste over alle installerte apper på enheten
+ * - Søkefilter for å finne spesifikke apper
+ * - Filter chips for å veksle mellom alle apper og kun valgte apper
+ * - Checkbox på hver rad for å velge/velge bort apper
+ * - Asynkron innlasting av app-ikoner (for bedre ytelse)
+ * 
+ * State-håndtering:
+ * - filteredApps: Listen med apper som vises (etter søk og filtrering)
+ * - selectedCount: Antall valgte apper
+ * - isLoading: Om app-listen lastes inn
+ * - showOnlySelected: Om kun valgte apper skal vises
+ * - searchQuery: Gjeldende søketekst
+ */
 @Composable
 fun AppsScreen(
     viewModel: AppsViewModel = viewModel()
 ) {
+    // ==================================================================
+    // STATE - Observér state fra ViewModel
+    // ==================================================================
+    // state inneholder alt vi trenger for å vise skjermen:
+    // - filteredApps: Apper som vises etter søk/filtrering
+    // - selectedCount: Antall valgte apper
+    // - isLoading: Om data lastes
+    // - showOnlySelected: Om kun valgte vises
+    // - searchQuery: Søketekst
     val state by viewModel.state.collectAsState()
 
+    // ==================================================================
+    // LAYOUT - Hovedlayout
+    // ==================================================================
     Column(modifier = Modifier.fillMaxSize()) {
+        // Header med tittel og undertittel
         GrevlingHeader(
             title = stringResource(R.string.app_selection_title),
             subtitle = stringResource(R.string.app_selection_subtitle)
@@ -65,6 +95,10 @@ fun AppsScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            // ==================================================================
+            // VALGTE APPER - Teller
+            // ==================================================================
+            // Viser antall valgte apper øverst
             Text(
                 text = stringResource(R.string.selected_apps_count, state.selectedCount),
                 style = MaterialTheme.typography.titleMedium,
@@ -73,6 +107,11 @@ fun AppsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ==================================================================
+            // SØKEFELT - Filter for app-navn
+            // ==================================================================
+            // Tekstfelt for søk. Når bruker skriver, oppdateres searchQuery i state.
+            // ViewModel filtrerer app-listen automatisk basert på søket.
             TextField(
                 value = state.searchQuery,
                 onValueChange = { viewModel.updateSearchQuery(it) },
@@ -96,6 +135,12 @@ fun AppsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ==================================================================
+            // FILTER CHIPS - Velg visningsmodus
+            // ==================================================================
+            // To knapper: "Alle apper" og "Valgte apper"
+            // "Alle apper" viser alle installerte apper
+            // "Valgte apper" viser kun de som er valgt (med checkbox)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -113,6 +158,12 @@ fun AppsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ==================================================================
+            // APP-LISTE - LazyColumn med installerte apper
+            // ==================================================================
+            // Hvis isLoading er true, vis en progress indicator.
+            // Ellers vis en LazyColumn med alle filtrerte apper.
+            // Hver rad er en AppListItem med checkbox.
             if (state.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -141,6 +192,15 @@ fun AppsScreen(
     }
 }
 
+/**
+ * AppListItem - En enkelt rad i app-listen.
+ * 
+ * Viser app-ikon (venstre), app-navn og package-navn (midt), 
+ * samt checkbox (høyre) for å velge/velge bort appen.
+ * 
+ * Hele raden er klikkbar - trykk hvor som helst på raden
+ * for å veksle valg-status.
+ */
 @Composable
 private fun AppListItem(
     app: AppInfo,
@@ -165,11 +225,13 @@ private fun AppListItem(
         Column(
             modifier = Modifier.weight(1f)
         ) {
+            // App-navn - vises i stor skrift
             Text(
                 text = app.appName,
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1
             )
+            // Package-navn - vises i liten skrift med dempet farge
             Text(
                 text = app.packageName,
                 style = MaterialTheme.typography.bodySmall,
@@ -180,6 +242,7 @@ private fun AppListItem(
 
         Spacer(modifier = Modifier.width(16.dp))
 
+        // Checkbox for å velge/velge bort denne appen
         Checkbox(
             checked = app.isSelected,
             onCheckedChange = { onToggle() }
@@ -187,23 +250,45 @@ private fun AppListItem(
     }
 }
 
+/**
+ * AppIcon - Laster app-ikon asynkront fra package manager.
+ * 
+ * Bruker produceState for asynkron lasting av ikonet på bakgrunnstråd
+ * (via Dispatchers.IO) for å ikke blokkere UI-tråden.
+ * 
+ * Returnerer:
+ * - Image med app-ikonet hvis det kan lastes
+ * - Placeholder (tom boks med sirkulær form) hvis ikonet ikke kan lastes
+ */
 @Composable
 fun AppIcon(
     packageName: String,
     appName: String,
     modifier: Modifier = Modifier
 ) {
+    // ==================================================================
+    // ASYNKRON IKON-LASTING
+    // ==================================================================
+    // Bruker produceState for å laste ikonet asynkront.
+    // Key (packageName) sikrer at composable re-kjøres når package endres.
     val context = LocalContext.current
     val icon: Drawable? by produceState<Drawable?>(initialValue = null, packageName) {
+        // Kjør på IO-dispatcher for å ikke blokkere UI-tråden
         value = withContext(Dispatchers.IO) {
             try {
+                // Prøv å hent ikonet fra PackageManager
                 context.packageManager.getApplicationIcon(packageName)
             } catch (e: Exception) {
+                // Returner null hvis appen ikke finnes eller ikonet ikke kan lastes
                 null
             }
         }
     }
 
+    // ==================================================================
+    // VIS IKON ELLER PLACEHOLDER
+    // ==================================================================
+    // Hvis vi har et ikon, vis det. Ellers vis en placeholder-boks.
     if (icon != null) {
         Image(
             painter = rememberDrawablePainter(icon),

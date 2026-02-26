@@ -37,26 +37,28 @@ import com.grevlingappen.R
 import com.grevlingappen.ui.navigation.NavGraph
 import com.grevlingappen.ui.navigation.Screen
 
-// ============================================================================
-// MAIN SCREEN - Hovedlayout med bottom navigation
-// ============================================================================
-// Dette er "roten" av hele UI-strukturen med Material 3 design
-
+/**
+ * MainScreen - Hovedlayout med bottom navigation.
+ * 
+ * Dette er "roten" av hele UI-strukturen.
+ * Inneholder:
+ * - Bottom navigation med 3 faner (Hjem, Apper, Innstillinger)
+ * - SnackbarHost for popup-meldinger
+ * - Navigation graph som håndterer visning av ulike skjermer
+ */
 @Composable
 fun MainScreen() {
-    // NavController holder styr på navigation state
+    // NavController holder styr på navigasjon mellom skjermer
     val navController = rememberNavController()
     
-    // SnackbarHostState for popup-meldinger
+    // SnackbarHostState for popup-meldinger (brukes av ulike skjermer)
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Observér current destination for å highlighte riktig tab
+    // Observér current destination for å markere riktig fane
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    // ------------------------------------------------------------------------
-    // BOTTOM NAV ITEMS - Bruker remember for å unngå re-allokering
-    // ------------------------------------------------------------------------
+    // Bottom navigation elementer
     val homeLabel = stringResource(R.string.nav_home)
     val appsLabel = stringResource(R.string.nav_apps)
     val settingsLabel = stringResource(R.string.nav_settings)
@@ -81,10 +83,9 @@ fun MainScreen() {
         )
     }
 
-    // ------------------------------------------------------------------------
-    // SCAFFOLD - Material 3 layout structure
-    // ------------------------------------------------------------------------
+    // Material 3 Scaffold - grunnleggende layoutstruktur
     Scaffold(
+        // Snackbar for meldinger
         snackbarHost = {
             SnackbarHost(
                 hostState = snackbarHostState,
@@ -114,8 +115,10 @@ fun MainScreen() {
                 }
             )
         },
+        // Bottom navigation bar
         bottomBar = {
             Column {
+                // "Laget av" tekst
                 Text(
                     text = stringResource(R.string.developed_by),
                     style = MaterialTheme.typography.labelSmall,
@@ -126,10 +129,10 @@ fun MainScreen() {
                         .background(MaterialTheme.colorScheme.surfaceContainer)
                         .padding(vertical = 5.dp)
                 )
+                // Navigasjonsbar med ikoner
                 NavigationBar {
-                    // Loop gjennom alle bottom nav items
                     bottomNavItems.forEach { item ->
-                        // Sjekk om denne screen er aktiv
+                        // Sjekk om denne skjermen er aktiv
                         val isSelected = currentDestination?.hierarchy?.any {
                             it.route == item.screen.route
                         } == true
@@ -144,16 +147,15 @@ fun MainScreen() {
                             label = { Text(item.label) },
                             selected = isSelected,
                             onClick = {
-                                // Naviger til selected screen
+                                // Naviger til valgt skjerm
                                 navController.navigate(item.screen.route) {
-                                    // Unngå å bygge opp stor back-stack:
-                                    // Alltid pop til start når vi bytter tab
+                                    // Pop til start for å unngå stor back-stack
                                     popUpTo(navController.graph.findStartDestination().id) {
                                         saveState = true
                                     }
-                                    // Unngå multiple copies av samme destination
+                                    // Unngå flere kopier av samme destination
                                     launchSingleTop = true
-                                    // Restore state når vi går tilbake til en tab
+                                    // Gjenopprett state ved tilbakegang
                                     restoreState = true
                                 }
                             }
@@ -163,7 +165,7 @@ fun MainScreen() {
             }
         }
     ) { innerPadding ->
-        // Content area - NavGraph håndterer hvilken screen som vises
+        // Hovedinnhold - NavGraph håndterer hvilken skjerm som vises
         NavGraph(
             navController = navController,
             snackbarHostState = snackbarHostState,
@@ -172,12 +174,10 @@ fun MainScreen() {
     }
 }
 
-// ============================================================================
-// BOTTOM NAV ITEM - Data class for bottom navigation items
-// ============================================================================
-// Kobler screen, icon og label sammen
-// Må være private data class (ikke kan brukes utenfor denne filen)
-
+/**
+ * BottomNavItem - Data class som kobler skjerm, ikon og label sammen.
+ * Privat fordi den kun brukes internt i denne filen.
+ */
 private data class BottomNavItem(
     val screen: Screen,
     val icon: ImageVector,

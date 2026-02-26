@@ -53,29 +53,71 @@ import com.grevlingappen.ui.theme.StatusWarning
 import com.grevlingappen.utils.Logger
 import com.grevlingappen.utils.PermissionsHelper
 
+/**
+ * SettingsScreen - Innstillinger-skjerm for e-post og tilganger.
+ * 
+ * Funksjonalitet:
+ * - E-post konfigurasjon (mottaker, Gmail-addresse, app-passord)
+ * - Test e-post for å validere oppsett
+ * - Tilgangsstatus og behov for permissions
+ * - Battery optimization håndtering
+ * 
+ * Lifecycle-håndtering:
+ * - Sjekker permissions når appen gjenopptas (ON_RESUME)
+ * - Lagrer alle endringer når appen pauses (ON_PAUSE)
+ * - Lagrer også ved navigasjon bort fra skjermen
+ * 
+ * Dialoger:
+ * - App password dialog: Forklarer hva app-passord er og hvordan få det
+ * - Restricted settings dialog: For Android 13+ der man må skru på tilganger manuelt
+ * - Battery dialog: Ber bruker om å ignorere battery optimization
+ * - Permission rationale dialog: Forklarer hvorfor SMS/telefon-tilgang er nødvendig
+ * - Notification rationale dialog: Forklarer hvorfor notification access er nødvendig
+ */
 @Composable
 fun SettingsScreen(
     snackbarHostState: SnackbarHostState,
     viewModel: SettingsViewModel = viewModel()
 ) {
+    // Context og lifecycle-eier for Compose
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Observer UI State fra ViewModel
+    // ==================================================================
+    // UI STATE - Observér state fra ViewModel
+    // ==================================================================
+    // uiState inneholder alle data som trengs for å vise skjermen:
+    // - E-postadresser (mottaker og Gmail)
+    // - Om Gmail-passord er satt
+    // - Permissions-status (notification, SMS, battery)
+    // - Om test-e-post sendes
+    // - Resultat fra test-e-post (suksess/feil)
     val uiState by viewModel.uiState.collectAsState()
 
-    // Lokale dialog-states (UI-spesifikt)
+    // ==================================================================
+    // LOKALE DIALOG-STATES - UI-spesifikk tilstands-håndtering
+    // ==================================================================
+    // Disse holder styr på om hver dialog skal vises.
+    // Bruker remember for å bevare verdien ved recomposition.
     val showAppPasswordDialog = remember { mutableStateOf(false) }
     val showRestrictedSettingsDialog = remember { mutableStateOf(false) }
     val showBatteryDialog = remember { mutableStateOf(false) }
     val showPermissionRationaleDialog = remember { mutableStateOf(false) }
     val showNotificationRationaleDialog = remember { mutableStateOf(false) }
 
+    // ==================================================================
+    // PASSORD-INPUT - Lokal state for passord-feltet
+    // ==================================================================
+    // Trenger egen state fordi vi vil vise •••••••••••••••• når passord er satt,
+    // men la feltet være tomt ved første visning. ViewModel lagrer det faktiske passordet.
     var passwordInput by remember { mutableStateOf("") }
 
     // ==================================================================
     // SNACKBAR - Vis testresultat som popup
     // ==================================================================
+    // Testresultat kan komme fra stringResource (testEmailResultRes) eller
+    // fra en custom string (testEmailResultCustom). Vi viser det som en snackbar.
+    // LaunchedEffect reagerer på endringer i testResultMessage og viser snackbaren.
     val testResultMessage = when {
         uiState.testEmailResultRes != 0 -> stringResource(uiState.testEmailResultRes)
         uiState.testEmailResultCustom.isNotEmpty() -> uiState.testEmailResultCustom
@@ -89,6 +131,11 @@ fun SettingsScreen(
         }
     }
 
+    // ==================================================================
+    // NAVIGASJONS-EVENTS - Åpne systeminnstillinger
+    // ==================================================================
+    // ViewModel kan sende intents for å åpne systeminnstillinger
+    // (f.eks. notification settings, battery settings)
     LaunchedEffect(Unit) {
         viewModel.navigationEvent.collect { intent ->
             context.startActivity(intent)
@@ -98,6 +145,8 @@ fun SettingsScreen(
     // ==================================================================
     // LIFECYCLE - Oppdater permissions når appen gjenopptas, lagre når den pauses
     // ==================================================================
+    // ON_RESUME: Sjekk om permissions fortsatt er gyldige (bruker kan ha endret dem i systeminnstillinger)
+    // ON_PAUSE: Lagre alle endringer (f.eks. når bruker trykker Hjem-knappen)
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -114,8 +163,10 @@ fun SettingsScreen(
     }
 
     // ==================================================================
-    // PERMISSIONS LAUNCHER
+    // PERMISSIONS LAUNCHER - Håndterer systemdialoger for permissions
     // ==================================================================
+    // Launcher for å be om SMS/telefon-tilganger fra bruker.
+    // Etter at dialogen er ferdig, sjekker vi på nytt hvilke permissions som er gitt.
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) {
@@ -123,8 +174,12 @@ fun SettingsScreen(
     }
 
     // ==================================================================
-    // DIALOGS
+    // DIALOGS - Popup-vinduer for ulike formål
     // ==================================================================
+    // Disse dialogene vises kun når den tilhørende boolean-verdien er sann.
+    // De fleste dialogene forklarer hvorfor en tillatelse er nødvendig før vi ber om den.
+    
+    // Dialog: Hjelp til app-passord (hva det er og hvordan få det)
     if (showAppPasswordDialog.value) {
         AlertDialog(
             onDismissRequest = { showAppPasswordDialog.value = false },
@@ -254,8 +309,10 @@ fun SettingsScreen(
     }
 
     // ==================================================================
-    // LAYOUT
+    // LAYOUT - Hovedlayout med scroll og kort
     // ==================================================================
+    // Hoved-column med vertikal scrolling.
+    // Inneholder to kort: Account Settings og Permissions.
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -271,8 +328,13 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // ============================================================
-            // ACCOUNT SETTINGS CARD
+            // ACCOUNT SETTINGS CARD - E-post konfigurasjon
             // ============================================================
+            // Inneholder:
+            // - Mottaker e-post (hvem skal motta videresendt innhold?)
+            // - Gmail-addresse (avsender)
+            // - App password (for autentisering mot Gmail)
+            // - Test e-post knapp
             GrevlingCard {
                 Text(
                     text = stringResource(R.string.settings_header),
@@ -282,7 +344,7 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Recipient Email
+                // Recipient Email - Hvem skal motta videresendt innhold?
                 OutlinedTextField(
                     value = uiState.recipientEmail,
                     onValueChange = { viewModel.updateRecipientEmail(it) },
@@ -298,7 +360,7 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Gmail Address
+                // Gmail Address - E-postadressen som brukes som avsender
                 OutlinedTextField(
                     value = uiState.gmailAddress,
                     onValueChange = { viewModel.updateGmailAddress(it) },
@@ -314,7 +376,9 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Gmail Password
+                // Gmail Password - App-spesifikt passord for Gmail-autentisering
+                // Bruker PasswordVisualTransformation for å skjule passordet
+                // Viser •••••••••••••••• hvis passordet allerede er satt
                 OutlinedTextField(
                     value = passwordInput,
                     onValueChange = { passwordInput = it; viewModel.updateGmailPassword(it) },
@@ -334,7 +398,8 @@ fun SettingsScreen(
                     singleLine = true
                 )
 
-                // App Password Help
+                // App Password Help - Lenke til hjelp om hvordan få app-passord
+                // Vises kun hvis passordet ikke er satt
                 if (!uiState.hasGmailPassword) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -349,7 +414,8 @@ fun SettingsScreen(
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Test Email Button
+                // Test Email Button - Sender en test-e-post for å validere oppsettet
+                // Viser "Sender..." mens e-posten sendes, disables da knappen
                 GrevlingButton(
                     text = if (uiState.isSendingTestEmail)
                         stringResource(R.string.test_email_sending)
@@ -362,8 +428,13 @@ fun SettingsScreen(
             }
 
             // ============================================================
-            // PERMISSIONS CARD
+            // PERMISSIONS CARD - Status og requests for Android-tilganger
             // ============================================================
+            // Viser status for:
+            // - Notification access (for å lese varsler)
+            // - SMS/Telefon (for å lese SMS og anropslogg)
+            // - Battery optimization (for å holde appen aktiv)
+            // Knapper for å be om manglende tilganger vises kun hvis nødvendig.
             GrevlingCard {
                 Text(
                     text = stringResource(R.string.permissions_header),
@@ -373,7 +444,10 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Permissions Status - Individual colors for each line
+                // Permissions Status - Viser status for hver tillatelse
+                // Grønn (StatusSuccess) hvis gitt, gul (StatusWarning) hvis mangler
+                
+                // 1. Notification access - for å lese varsler fra andre apper
                 Text(
                     text = stringResource(
                         if (uiState.hasNotificationAccess) R.string.permissions_status_notification_ok
@@ -382,6 +456,8 @@ fun SettingsScreen(
                     color = if (uiState.hasNotificationAccess) StatusSuccess else StatusWarning,
                     style = MaterialTheme.typography.bodyMedium
                 )
+                
+                // 2. SMS/Telefon - for å lese SMS og anropslogg
                 Text(
                     text = stringResource(
                         if (uiState.hasAllPermissions) R.string.permissions_status_sms_ok
@@ -390,6 +466,8 @@ fun SettingsScreen(
                     color = if (uiState.hasAllPermissions) StatusSuccess else StatusWarning,
                     style = MaterialTheme.typography.bodyMedium
                 )
+                
+                // 3. Battery optimization - for å holde appen aktiv i bakgrunnen
                 Text(
                     text = stringResource(
                         if (uiState.isIgnoringBatteryOptimizations) R.string.permissions_status_battery_ok
@@ -401,7 +479,8 @@ fun SettingsScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Notification Button (skjul hvis granted)
+                // Notification Button - Ber om notification access
+                // Vises kun hvis brukeren ikke allerede har gitt denne tilgangen
                 if (!uiState.hasNotificationAccess) {
                     GrevlingButton(
                         text = stringResource(R.string.notification_access_button),
@@ -412,7 +491,8 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Request Permissions Button (skjul hvis granted)
+                // Request Permissions Button - Ber om SMS og telefon-tilganger
+                // Vises kun hvis brukeren ikke allerede har gitt disse tilgangene
                 if (!uiState.hasAllPermissions) {
                     GrevlingButton(
                         text = stringResource(R.string.request_permissions_button),
@@ -422,7 +502,9 @@ fun SettingsScreen(
                     )
                 }
 
-                // Battery Optimization Button (skjul hvis allerede ignorert)
+                // Battery Optimization Button - Ber bruker om å ignorere battery optimization
+                // Dette er nødvendig for at appen skal kunne kjøre i bakgrunnen
+                // Vises kun hvis brukeren ikke allerede har ignorert dette
                 if (!uiState.isIgnoringBatteryOptimizations) {
                     Spacer(modifier = Modifier.height(8.dp))
                     GrevlingButton(
@@ -433,7 +515,10 @@ fun SettingsScreen(
                     )
                 }
 
-                // Restricted Settings Help - KUN hvis Android 13+ OG noe mangler
+                // Restricted Settings Help - Kun for Android 13+ (TIRAMISU)
+                // På Android 13+ kan ikke appen be om visse tilganger direkte.
+                // Brukeren må skru dem på manuelt i app-innstillingene.
+                // Vises kun hvis Android 13+ OG minst én tilgang mangler.
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && 
                     (!uiState.hasAllPermissions || !uiState.hasNotificationAccess)) {
                     Spacer(modifier = Modifier.height(8.dp))

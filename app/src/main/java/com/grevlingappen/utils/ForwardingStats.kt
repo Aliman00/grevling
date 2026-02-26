@@ -12,6 +12,14 @@ import java.time.format.DateTimeFormatter
 
 /**
  * ForwardingStats - Håndterer dagsstatistikk for videresendte meldinger og anrop.
+ * 
+ * Funksjonalitet:
+ * - Teller antall SMS og anrop videresendt i dag
+ * - Nullstiller tellere automatisk ved ny dag
+ * - Holder styr på tidspunkt for siste videresending
+ * - Oppdaterer widgets ved nye hendelser
+ * 
+ * Alle funksjoner er suspend og kjører på IO-dispatcher for async-operasjoner.
  */
 object ForwardingStats {
     private const val PREFS_NAME = "forwarding_stats"
@@ -22,29 +30,43 @@ object ForwardingStats {
 
     private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
 
-    // EN tydelig lock for all synkronisering
+    // Lock for synkronisering av data mellom tråder
     private val lock = Any()
 
-    // Gjør cachedDate trådsikker
+    // Cacher dagens dato for å unngå unødvendige kall
     @Volatile
     private var cachedDate: String? = null
 
+    /**
+     * Henter SharedPreferences for statistikk.
+     * Bruker egen prefs-fil atskilt fra hovedinnstillinger.
+     */
     private fun getPrefs(context: Context): SharedPreferences {
         return context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
-    /** Registrerer en videresendt SMS (suspend-funksjon). */
+    /**
+     * Registrerer en videresendt SMS.
+     * Øker telleren med 1 og oppdaterer widgets.
+     */
     suspend fun recordSmsForwarded(context: Context) = withContext(Dispatchers.IO) {
         recordEvent(context, KEY_SMS_COUNT_TODAY)
     }
 
-    /** Registrerer et videresendt tapt anrop (suspend-funksjon). */
+    /**
+     * Registrerer et videresendt tapte anrop.
+     * Øker telleren med 1 og oppdaterer widgets.
+     */
     suspend fun recordCallForwarded(context: Context) = withContext(Dispatchers.IO) {
         recordEvent(context, KEY_CALLS_COUNT_TODAY)
     }
 
+    /**
+     * Interne: Registrerer en videresendingshendelse.
+     * Sjekker for ny dag, øker telleren, og oppdaterer widgets.
+     */
     private fun recordEvent(context: Context, key: String) {
-        synchronized(lock) {  // BRUK lock istedenfor @Synchronized
+        synchronized(lock) {
             val appContext = context.applicationContext
             resetIfNewDayInternal(appContext)
             val prefs = getPrefs(appContext)
@@ -55,10 +77,15 @@ object ForwardingStats {
                 putLong(KEY_LAST_FORWARDED_TIME, System.currentTimeMillis())
             }
 
+            // Oppdater widgets for å vise ny statistikk
             updateAllWidgets(appContext)
         }
     }
 
+    /**
+     * Interne: Nullstiller tellere hvis det er ny dag.
+     * Bruker cached verdi for å unngå unødvendige prefs-lesinger.
+     */
     private fun resetIfNewDayInternal(context: Context) {
         val today = LocalDate.now().format(dateFormatter)
         if (cachedDate == today) return
@@ -74,7 +101,10 @@ object ForwardingStats {
         cachedDate = today
     }
 
-    /** Hent antall SMS videresendt i dag (suspend-funksjon). */
+    /**
+     * Henter antall SMS videresendt i dag.
+     * @return Antall SMS som videresendt i dag
+     */
     suspend fun getSmsCountToday(context: Context): Int = withContext(Dispatchers.IO) {
         synchronized(lock) {
             resetIfNewDayInternal(context)
@@ -82,7 +112,10 @@ object ForwardingStats {
         }
     }
 
-    /** Hent antall anrop videresendt i dag (suspend-funksjon). */
+    /**
+     * Henter antall anrop videresendt i dag.
+     * @return Antall anrop som videresendt i dag
+     */
     suspend fun getCallsCountToday(context: Context): Int = withContext(Dispatchers.IO) {
         synchronized(lock) {
             resetIfNewDayInternal(context)
@@ -90,16 +123,22 @@ object ForwardingStats {
         }
     }
 
-/** Hent totalt antall hendelser i dag (suspend-funksjon). */
-suspend fun getTotalCountToday(context: Context): Int = withContext(Dispatchers.IO) {
-    synchronized(lock) {
-        resetIfNewDayInternal(context)
-        getPrefs(context).getInt(KEY_SMS_COUNT_TODAY, 0) +
-        getPrefs(context).getInt(KEY_CALLS_COUNT_TODAY, 0)
+    /**
+     * Henter totalt antall hendelser (SMS + anrop) videresendt i dag.
+     * @return Totalt antall videresendinger i dag
+     */
+    suspend fun getTotalCountToday(context: Context): Int = withContext(Dispatchers.IO) {
+        synchronized(lock) {
+            resetIfNewDayInternal(context)
+            getPrefs(context).getInt(KEY_SMS_COUNT_TODAY, 0) +
+            getPrefs(context).getInt(KEY_CALLS_COUNT_TODAY, 0)
+        }
     }
-}
 
-    /** Hent tidspunkt for siste videresending som lesbar tekst (suspend-funksjon). */
+    /**
+     * Henter tidspunkt for siste videresending som lesbar tekst.
+     * @return f.eks. "Akurat nå", "5 minutter siden", "2 timer siden"
+     */
     suspend fun getLastForwardedTimeAgo(context: Context): String = withContext(Dispatchers.IO) {
         synchronized(lock) {
             val lastTime = getPrefs(context).getLong(KEY_LAST_FORWARDED_TIME, 0)
@@ -116,6 +155,9 @@ suspend fun getTotalCountToday(context: Context): Int = withContext(Dispatchers.
         }
     }
 
+    /**
+     * Interne: Oppdaterer alle widgets for å vise ny statistikk.
+     */
     private fun updateAllWidgets(context: Context) {
         WidgetHelper.updateAllWidgets(context)
     }

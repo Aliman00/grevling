@@ -12,15 +12,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-// ============================================================================
-// GREVLING CARD - Standard kort-komponent brukt i hele appen
-// ============================================================================
-// Erstatter <MaterialCardView> fra XML med konsistent styling:
-// - 16dp rounded corners
-// - Ingen elevation (flat Material 3 design)
-// - 1dp outline for synlig kant
-// - 16dp standard padding (kan overstyres)
-
+/**
+ * GrevlingCard - Standard kort-komponent brukt i hele appen.
+ * 
+ * Material 3 Card med konsistent styling:
+ * - 16dp rounded corners (store hjørner)
+ * - Flat Material 3 design (ingen skygge)
+ * - 1dp outline for synlig kant
+ * - 16dp standard padding
+ * 
+ * @param modifier Modifier for ytre tilpasning
+ * @param internalPadding Indre padding (standard 16dp)
+ * @param content Innholdet i kortet
+ */
 @Composable
 fun GrevlingCard(
     modifier: Modifier = Modifier.fillMaxWidth(),
@@ -29,11 +33,13 @@ fun GrevlingCard(
 ) {
     Card(
         modifier = modifier,
-        shape = MaterialTheme.shapes.large, // 16dp rounded corners
+        // 16dp rounded corners
+        shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        border = CardDefaults.outlinedCardBorder() // 1dp outline
+        // 1dp outline for synlig kant
+        border = CardDefaults.outlinedCardBorder()
     ) {
         Column(
             modifier = Modifier.padding(internalPadding),

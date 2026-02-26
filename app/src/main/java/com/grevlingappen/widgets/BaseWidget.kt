@@ -11,21 +11,43 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 /**
- * BaseWidget - Abstrakt klasse som håndterer felles logikk for alle app-widgets.
- * Bruker Coroutines og goAsync() for å garantere at asynkront arbeid fullføres.
+ * BaseWidget - Abstrakt basisklasse som håndterer felles logikk for alle app-widgets.
+ * 
+ * Funksjonalitet:
+ * - Håndterer widget-oppdatering asynkront via coroutines
+ * - Validerer sikkerhetstokens ved toggle-handlinger
+ * - Bruker goAsync() for å sikre at async-arbeid fullføres
+ * - Inneholder felles scope for alle widgets for ressurseffektivitet
+ * 
+ * Arve fra denne klassen for å lage nye widget-typer.
  */
 abstract class BaseWidget : AppWidgetProvider() {
 
+    /**
+     * Action-streng som identifiserer toggle-handlinger for denne widgeten.
+     * Må implementeres av subklasser.
+     */
     protected abstract val toggleAction: String
+    
+    /**
+     * Tag for logging - brukes til å identifisere widgeten i loggene.
+     * Må implementeres av subklasser.
+     */
     protected abstract val tag: String
 
     companion object {
-        // Felles scope for alle widgets for å spare ressurser
+        // Delt coroutine-scope for alle widget-instanser
+        // Gjenbrukes for å spare ressurser
         private val widgetScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     }
 
-    /** 
+    /**
      * Oppdaterer én widget-instans asynkront.
+     * Må implementeres av subklasser med spesifikk oppdateringslogikk.
+     * 
+     * @param context App-kontekst
+     * @param appWidgetManager WidgetManager for oppdateringer
+     * @param appWidgetId ID til spesifikk widget-instans
      */
     protected abstract suspend fun updateWidget(
         context: Context,
@@ -33,6 +55,10 @@ abstract class BaseWidget : AppWidgetProvider() {
         appWidgetId: Int
     )
 
+    /**
+     * Kjøres periodisk for å oppdatere alle instanser av denne widgeten.
+     * Bruker goAsync() for å holde broadcast alive under async-oppdatering.
+     */
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -41,6 +67,7 @@ abstract class BaseWidget : AppWidgetProvider() {
         val pendingResult = goAsync()
         widgetScope.launch {
             try {
+                // Oppdater hver widget-instans
                 appWidgetIds.forEach { id ->
                     updateWidget(context, appWidgetManager, id)
                 }
@@ -52,13 +79,20 @@ abstract class BaseWidget : AppWidgetProvider() {
         }
     }
 
+    /**
+     * Mottar broadcasts (f.eks. toggle-handlinger fra widgets).
+     * Validerer sikkerhetstoken før handling utføres.
+     */
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
+        
+        // Kun håndtere vår egen toggle-action
         if (intent.action != toggleAction) return
 
         val pendingResult = goAsync()
         widgetScope.launch {
             try {
+                // Valider sikkerhetstoken før vi utfører handling
                 if (WidgetHelper.isValidToken(context, intent)) {
                     WidgetHelper.toggleForwarding(context, tag)
                 } else {

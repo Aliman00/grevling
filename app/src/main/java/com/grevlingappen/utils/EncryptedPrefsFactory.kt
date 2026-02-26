@@ -7,18 +7,33 @@ import androidx.security.crypto.MasterKey
 import com.grevlingappen.data.PreferenceKeys
 
 /**
- * Factory for EncryptedSharedPreferences.
- * Håndterer sikker lagring og automatisk gjenoppretting ved fil-korrupsjon.
+ * EncryptedPrefsFactory - Factory som lager krypterte SharedPreferences.
+ * 
+ * Funksjonalitet:
+ * - Lager krypterte SharedPreferences med AES-256 kryptering
+ * - Håndterer automatisk gjenoppretting ved korrupsjon
+ * - Bruker AndroidX Security-biblioteket
+ * - Singleton-pattern med trådsikker initialisering
+ * 
+ * Viktig: Hvis kryptert lagring feiler, vises en dialog ved neste oppstart
+ * som forklarer at data ble nullstilt.
  */
 object EncryptedPrefsFactory {
     private const val TAG = "EncryptedPrefsFactory"
     
+    // Singleton-instans med volatile for trådsikker tilgang
     @Volatile
     private var instance: SharedPreferences? = null
 
     /**
-     * Hent trådsikker instans av krypterte innstillinger.
-     * Bruker double-checked locking for optimal ytelse.
+     * Henter singleton-instansen av krypterte innstillinger.
+     * 
+     * Bruker double-checked locking for optimal ytelse:
+     * 1. Sjekk uten lock (hurtig path hvis allerede initialisert)
+     * 2. Sjekk med lock (sikrer at kun én tråd lager instansen)
+     * 
+     * @param context App-kontekst
+     * @return SharedPreferences med AES-256 kryptering
      */
     fun get(context: Context): SharedPreferences {
         val i = instance
@@ -36,6 +51,12 @@ object EncryptedPrefsFactory {
         }
     }
 
+    /**
+     * Oppretter krypterte SharedPreferences med feilhåndtering.
+     * 
+     * Hvis første forsøk feiler (f.eks. korrupt fil), prøves det på nytt
+     * etter å ha slettet den korrupte fila.
+     */
     private fun createSafeInstance(context: Context): SharedPreferences {
         return try {
             val masterKey = createMasterKey(context)
@@ -43,7 +64,7 @@ object EncryptedPrefsFactory {
         } catch (e: Exception) {
             Logger.e(TAG, "Kryptert lagring feilet, prøver reset", e)
             
-            // Sett flagg FØR vi sletter, så UI kan vise forklaring ved neste oppstart
+            // Sett flagg FØR vi sletter - UI viser forklaring ved neste oppstart
             context.getSharedPreferences("app_flags", Context.MODE_PRIVATE)
                 .edit().putBoolean("prefs_were_reset", true).apply()
             
@@ -51,15 +72,20 @@ object EncryptedPrefsFactory {
             context.deleteSharedPreferences(PreferenceKeys.PREFS_NAME)
             
             try {
+                // Prøv på nytt med fresh start
                 val masterKey = createMasterKey(context)
                 createEncryptedPrefs(context, masterKey)
             } catch (retryEx: Exception) {
                 Logger.e(TAG, "Kritisk feil: Sikker lagring er utilgjengelig etter reset", retryEx)
-                throw SecurityException("Kunne ikke opprette sikker lagring. Appen kan ikke fortsette av sikkerhetshensyn.", retryEx)
+                throw SecurityException("Kunne ikke opprette sikker lagring. Appen kan ikke fortsette.", retryEx)
             }
         }
     }
 
+    /**
+     * Oppretter MasterKey for kryptering.
+     * Bruker AES-256-GCM som krypteringsalgoritme.
+     */
     @Suppress("DEPRECATION")
     private fun createMasterKey(context: Context): MasterKey {
         return MasterKey.Builder(context)
@@ -67,6 +93,13 @@ object EncryptedPrefsFactory {
             .build()
     }
 
+    /**
+     * Oppretter krypterte SharedPreferences.
+     * 
+     * Bruker:
+     * - AES-256-SIV for nøkler (ikontrollerer tilgang til verdier)
+     * - AES-256-GCM for verdier (selve krypteringen)
+     */
     @Suppress("DEPRECATION")
     private fun createEncryptedPrefs(context: Context, masterKey: MasterKey): SharedPreferences {
         return EncryptedSharedPreferences.create(

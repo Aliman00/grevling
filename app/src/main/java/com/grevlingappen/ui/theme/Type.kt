@@ -6,20 +6,19 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-// ============================================================================
-// TYPOGRAPHY - Definerer tekststiler for hele appen
-// ============================================================================
-// Material Design 3 har et typografi-system med forhåndsdefinerte størrelser:
-// - displayLarge/Medium/Small: Store overskrifter (hero-tekst)
-// - headlineLarge/Medium/Small: Seksjon-overskrifter
-// - titleLarge/Medium/Small: Kort innhold som knapper, titler
-// - bodyLarge/Medium/Small: Brødtekst (standard lesing)
-// - labelLarge/Medium/Small: Små tekster som statuser, tags
+/**
+ * Typography - Definerer tekststiler for hele appen.
+ * 
+ * Material Design 3 har et typografi-system med forhåndsdefinerte størrelser:
+ * - displayLarge/Medium/Small: Store overskrifter (hero-tekst)
+ * - headlineLarge/Medium/Small: Seksjon-overskrifter
+ * - titleLarge/Medium/Small: Kort innhold som knapper, titler
+ * - bodyLarge/Medium/Small: Brødtekst (standard lesing)
+ * - labelLarge/Medium/Small: Små tekster som statuser, tags
+ */
 
 val Typography = Typography(
-    // -----------------------------------------------------------------------
     // DISPLAY - Største tekst (sjelden brukt, kun for hero-seksjoner)
-    // -----------------------------------------------------------------------
     displayLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
@@ -28,10 +27,8 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // -----------------------------------------------------------------------
     // HEADLINE - Store overskrifter (brukes til skjerm-titler)
-    // -----------------------------------------------------------------------
-    // headlineLarge brukes til "🦡 GREVLING APPEN" tittel
+    // headlineLarge brukes til "GrevlingAppen" tittel
     headlineLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
@@ -40,9 +37,7 @@ val Typography = Typography(
         letterSpacing = 0.sp
     ),
 
-    // -----------------------------------------------------------------------
     // TITLE - Medium overskrifter (brukes til seksjons-titler)
-    // -----------------------------------------------------------------------
     // titleLarge brukes til "Account Settings", "Permissions" etc.
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,
@@ -61,9 +56,7 @@ val Typography = Typography(
         letterSpacing = 0.15.sp
     ),
 
-    // -----------------------------------------------------------------------
     // BODY - Standard brødtekst (det meste av teksten i appen)
-    // -----------------------------------------------------------------------
     // bodyLarge brukes til viktig informasjon, beskrivelser
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,
@@ -82,9 +75,7 @@ val Typography = Typography(
         letterSpacing = 0.25.sp
     ),
 
-    // -----------------------------------------------------------------------
     // LABEL - Små tekster (knapper, status-indikatorer, tags)
-    // -----------------------------------------------------------------------
     // labelLarge brukes til knapper ("AKTIVER VIDERESENDING")
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,

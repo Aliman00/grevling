@@ -25,18 +25,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.grevlingappen.R
 
-// ============================================================================
-// GREVLING HEADER - Gradient header med ikon, tittel og undertekst
-// ============================================================================
-// Erstatter XML gradient-header fra v1.0
-// Brukes på toppen av Home, Apps og Settings screens
-
+/**
+ * GrevlingHeader - Gradient header med app-ikon, tittel og undertekst.
+ * 
+ * Vises på toppen av alle hovedskjermer (Home, Apps, Settings).
+ * Bruker temaets primær- og sekundærfarger for gradient.
+ * 
+ * @param title Hovedtittel (f.eks. "GrevlingAppen")
+ * @param subtitle Undertekst med beskrivelse
+ * @param modifier Modifier for ekstra tilpasning
+ */
 @Composable
 fun GrevlingHeader(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier
 ) {
+    // Hent tema-farger for gradient
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
     
@@ -58,7 +63,7 @@ fun GrevlingHeader(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Sirkulært ikon
+            // Sirkulært ikon med skygge
             Card(
                 modifier = Modifier.size(80.dp),
                 shape = CircleShape,
@@ -81,7 +86,7 @@ fun GrevlingHeader(
                 }
             }
 
-            // Tittel
+            // Hovedtittel
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineLarge,

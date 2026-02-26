@@ -5,16 +5,22 @@ import com.grevlingappen.BuildConfig
 
 /**
  * Logger - Sentralisert wrapper rundt Android Log.
+ * 
+ * Forenkler logging ved å:
+ * - Kunne skru av debug-logg i release bygg
+ * - Ha konsistent tag-bruk
+ * - Enklere syntaks
  */
 object Logger {
+    // Bestemmes av BuildConfig - true i debug, false i release
     private val isDebug: Boolean = BuildConfig.DEBUG
 
-    /** Debug: Kun for utvikling, fjernes i release. */
+    /** Debug-logg: Kun for utvikling, skrus av i release. */
     fun d(tag: String, message: String) {
         if (isDebug) Log.d(tag, message)
     }
 
-    /** Info: Viktige hendelser i utvikling, fjernes i release. */
+    /** Info-logg: Viktige hendelser i utvikling, skrus av i release. */
     fun i(tag: String, message: String) {
         if (isDebug) Log.i(tag, message)
     }
@@ -38,7 +44,7 @@ object Logger {
         Log.e(tag, message)
     }
 
-    /** Error med unntak: Vises alltid med stacktrace for å lette feilsøking. */
+    /** Error med unntak: Vises alltid med stacktrace for feilsøking. */
     fun e(tag: String, message: String, throwable: Throwable) {
         Log.e(tag, message, throwable)
     }

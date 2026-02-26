@@ -10,10 +10,19 @@ import com.grevlingappen.ui.screens.apps.AppsScreen
 import com.grevlingappen.ui.screens.home.HomeScreen
 import com.grevlingappen.ui.screens.settings.SettingsScreen
 
-// ============================================================================
-// NAV GRAPH - Definerer navigasjons-struktur for hele appen
-// ============================================================================
-
+/**
+ * NavGraph - Definerer navigasjonsstrukturen for hele appen.
+ * 
+ * Setter opp:
+ * - Start-destinasjon (Home)
+ * - Ruter til alle skjermer
+ * - Hvilke composables som skal vises for hver rute
+ * 
+ * @param navController NavController fra Jetpack Navigation
+ * @param snackbarHostState Delts snackbar state for popup-meldinger
+ * @param modifier Modifier for layout-tilpasning
+ * @param startDestination Start-rute (standard: Home)
+ */
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -24,25 +33,19 @@ fun NavGraph(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier  // ← Viktig for å respektere Scaffold padding
+        modifier = modifier
     ) {
-        // --------------------------------------------------------------------
-        // HOME SCREEN
-        // --------------------------------------------------------------------
+        // Home Screen
         composable(route = Screen.Home.route) {
             HomeScreen()
         }
 
-        // --------------------------------------------------------------------
-        // APPS SCREEN
-        // --------------------------------------------------------------------
+        // Apps Screen
         composable(route = Screen.Apps.route) {
             AppsScreen()
         }
 
-        // --------------------------------------------------------------------
-        // SETTINGS SCREEN
-        // --------------------------------------------------------------------
+        // Settings Screen
         composable(route = Screen.Settings.route) {
             SettingsScreen(snackbarHostState = snackbarHostState)
         }

@@ -11,7 +11,17 @@ import com.grevlingappen.utils.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** AppRepository - Håndterer henting og filtrering av installerte applikasjoner på enheten. */
+/**
+ * AppRepository - Håndterer henting og filtrering av installerte applikasjoner på enheten.
+ * 
+ * Funksjonalitet:
+ * - Henter alle installerte apper med launcher-ikon
+ * - Merker apper som er valgt for overvåking
+ * - Søker i app-liste basert på navn eller pakkenavn
+ * - Filtrerer for å kun vise valgte apper
+ * 
+ * Merk: Kun apper med launcher-ikon vises (ikke system-apper uten ikon).
+ */
 class AppRepository(context: Context) {
 
     private val appContext = context.applicationContext
@@ -19,7 +29,12 @@ class AppRepository(context: Context) {
 
     /**
      * Henter alle installerte apper som har et ikon i launcheren.
+     * 
      * Bruker asynkron lasting på Dispatchers.IO for å unngå blokkering av UI.
+     * Sorterer resultatet slik at valgte apper vises først.
+     * 
+     * @param selectedPackages Sett med package names som er valgt for overvåking
+     * @return Liste med AppInfo for alle installerte apper
      */
     @SuppressLint("QueryPermissionsNeeded")
     suspend fun getInstalledApps(selectedPackages: Set<String>): List<AppInfo> = withContext(Dispatchers.IO) {
@@ -27,11 +42,12 @@ class AppRepository(context: Context) {
             val startTime = System.currentTimeMillis()
 
             val apps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                // Bruk getInstalledPackages for API 33+
+                // API 33+: bruk getInstalledPackages
                 packageManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(0))
                     .mapNotNull { info ->
                         try {
                             val appInfo = info.applicationInfo ?: return@mapNotNull null
+                            // Kun inkluder apper med launcher-ikon
                             if (packageManager.getLaunchIntentForPackage(appInfo.packageName) != null) {
                                 AppInfo(
                                     packageName = appInfo.packageName,
@@ -44,7 +60,7 @@ class AppRepository(context: Context) {
                         }
                     }
             } else {
-                // Fallback for eldre API-versjoner
+                // Eldre API: bruk getInstalledApplications
                 @Suppress("DEPRECATION")
                 packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
                     .filter { packageManager.getLaunchIntentForPackage(it.packageName) != null }
@@ -57,6 +73,7 @@ class AppRepository(context: Context) {
                     }
             }
 
+            // Sorter: valgte først, deretter alfabetisk
             val sortedApps = apps.sortedWith(
                 compareByDescending<AppInfo> { it.isSelected }
                     .thenBy { it.appName.lowercase() }
@@ -70,6 +87,10 @@ class AppRepository(context: Context) {
         }
     }
 
+    /**
+     * Henter visningsnavn for en app.
+     * Fallbacker til package name hvis navn ikke finnes.
+     */
     private fun getAppName(appInfo: ApplicationInfo): String = try {
         packageManager.getApplicationLabel(appInfo).toString()
     } catch (e: Exception) {
@@ -80,7 +101,13 @@ class AppRepository(context: Context) {
     companion object {
         private const val TAG = "AppRepository"
 
-        /** Utfører søk i en eksisterende app-liste basert på navn eller pakkenavn. */
+        /**
+         * Søker i en app-liste basert på navn eller pakkenavn.
+         * 
+         * @param apps Liste å søke i
+         * @param query Søkestreng
+         * @return Filtrert liste med matchende apper
+         */
         fun searchApps(apps: List<AppInfo>, query: String): List<AppInfo> {
             if (query.isBlank()) return apps
             val lowerQuery = query.lowercase()
@@ -89,7 +116,13 @@ class AppRepository(context: Context) {
             }
         }
 
-        /** Filtrerer listen til å kun vise valgte apper. */
+        /**
+         * Filtrerer listen til kun å vise valgte (eller alle) apper.
+         * 
+         * @param apps Liste å filtrere
+         * @param showOnlySelected true for kun valgte, false for alle
+         * @return Filtrert liste
+         */
         fun filterSelected(apps: List<AppInfo>, showOnlySelected: Boolean): List<AppInfo> {
             return if (showOnlySelected) apps.filter { it.isSelected } else apps
         }

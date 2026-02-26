@@ -12,14 +12,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import java.util.Locale
 
-// ============================================================================
-// GREVLING BUTTON - Standard knapp brukt i hele appen
-// ============================================================================
-// Material 3 Button med konsistent styling:
-// - 24dp rounded corners (pill-shape)
-// - 56dp høyde (touch-target)
-// - Bold tekst
-
+/**
+ * GrevlingButton - Standard knapp brukt i hele appen.
+ * 
+ * Material 3 Button med konsistent styling:
+ * - Ekstra store hjørner (pill-shape)
+ * - 56dp høyde for god touch-target
+ * - Bold/STOR tekst
+ * 
+ * @param text Tekst som vises på knappen
+ * @param onClick Lambda som kalles ved klikk
+ * @param modifier Modifier for tilpasning
+ * @param enabled Om knappen er aktiv (true) eller disabled (false)
+ * @param backgroundColor Bakgrunnsfarge (bruker tema primary som standard)
+ * @param contentPadding Indre padding
+ */
 @Composable
 fun GrevlingButton(
     text: String,
@@ -31,8 +38,10 @@ fun GrevlingButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.defaultMinSize(minHeight = 56.dp), // Bruker minHeight i stedet for fast height for bedre tilgjengelighet
+        // Min-height på 56dp for god touch-target
+        modifier = modifier.defaultMinSize(minHeight = 56.dp),
         enabled = enabled,
+        // Bruk temaets ekstra store hjørne-radius
         shape = MaterialTheme.shapes.extraLarge,
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,

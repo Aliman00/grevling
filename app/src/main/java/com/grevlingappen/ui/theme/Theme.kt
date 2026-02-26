@@ -11,23 +11,25 @@ import androidx.compose.ui.res.colorResource
 import androidx.core.view.WindowCompat
 import com.grevlingappen.R
 
-// ============================================================================
-// THEME.KT - App-tema som kombinerer farger og typography
-// ============================================================================
-// Wrapper hele appen i GrevlingTheme { } for å gi alle komponenter
-// tilgang til MaterialTheme.colorScheme.primary, .typography.bodyLarge, etc.
-
-// ----------------------------------------------------------------------------
-// GREVLING THEME - Hovedfunksjon som aktiverer temaet
-// ----------------------------------------------------------------------------
-// Brukes i MainActivity: GrevlingTheme { YourScreen() }
+/**
+ * GrevlingTheme - Hovedtema for appen.
+ * 
+ * Setter opp Material Design 3 farger og typografi for hele appen.
+ * Wrapper hele appen i GrevlingTheme { } for å gi alle komponenter
+ * tilgang til MaterialTheme.colorScheme.primary, .typography.bodyLarge, etc.
+ * 
+ * Brukes i MainActivity slik:
+ * GrevlingTheme { YourScreen() }
+ * 
+ * @param darkTheme Om mørkt tema skal brukes (for fremtidig støtte)
+ * @param content Alt UI som wrappes i temaet
+ */
 @Composable
 fun GrevlingTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(), // For fremtidig dark mode
-    content: @Composable () -> Unit              // Alt UI wrappes i denne
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
 ) {
-    // lightColorScheme() organiserer fargene i Material Design 3 standard
-    // Henter farger direkte fra colors.xml for å ha "Single Source of Truth"
+    // lightColorScheme() henter farger fra colors.xml for konsistens
     val colorScheme = lightColorScheme(
         primary = colorResource(R.color.md_primary),
         onPrimary = colorResource(R.color.md_on_primary),
@@ -46,23 +48,22 @@ fun GrevlingTheme(
         outlineVariant = colorResource(R.color.md_outline_variant)
     )
 
-    // Sett status bar styling (top bar med klokke/batteri)
-    // Status bar får hvit bakgrunn for kontrast mot appens lette bakgrunn
+    // Sett status bar (topp-menylinje med klokke/batteri)
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Hvit status bar = bedre kontrast for ikoner
+            // Hvit bakgrunn for bedre kontrast mot ikoner
             window.statusBarColor = android.graphics.Color.WHITE
-            // Bruk mørke ikoner (klokke/batteri) på lys bakgrunn
+            // Mørke ikoner på lys bakgrunn
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
 
-    // MaterialTheme gir alle child-komponenter tilgang til colorScheme og typography
+    // MaterialTheme gir alle child-komponenter tilgang til farger og typografi
     MaterialTheme(
-        colorScheme = colorScheme,  // Fargene fra LightColorScheme
-        typography = Typography,    // Tekststiler fra Type.kt
-        content = content           // Alt UI (screens, komponenter)
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
     )
 }
